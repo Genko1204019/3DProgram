@@ -111,24 +111,6 @@ void PathManager::FindEnemyPoint(float _ePosX, float _ePosZ, int& _ePointX, int&
 		}
 	}
 
-
-	//float tileSize = 6; // Adjust according to your actual tile size  //6
-
-	//// Calculate the player's position on the grid
-	//int gridX = static_cast<int>(_ePosX / tileSize);
-	//int gridY = static_cast<int>(_ePosZ / tileSize);
-
-	//// Check bounds to prevent accessing out-of-bounds tiles
-	//if (gridX >= 0 && gridX < mapW && gridY >= 0 && gridY < mapH)
-	//{
-	//	// Check if the tile is walkable
-	//	if (isWalkable[gridY][gridX])
-	//	{
-	//		_ePointX = mapId[gridY][gridX].x;
-	//		_ePointY = mapId[gridY][gridX].y;
-	//	}
-	//}
-
 }
 
 

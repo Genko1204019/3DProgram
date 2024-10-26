@@ -7,7 +7,7 @@ struct KdFPSController
 {
 	// FPS制御
 	int		m_nowfps = 0;		// 現在のFPS値
-	int		m_maxFps = 60;		// 最大FPS
+	int		m_maxFps = 6100;		// 最大FPS
 
 	void Init();
 

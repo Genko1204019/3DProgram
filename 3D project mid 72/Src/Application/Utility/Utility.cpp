@@ -32,3 +32,39 @@ float Utility::max(float a, float b)
 {
 	return 0.0f;
 }
+
+void Utility::CalOverlap(const std::list<KdCollider::CollisionResult>& _colRet, float& _overlap, bool& _isHit, Vector3& _hitPos, Vector3& _hitDir)
+{
+	for (const auto& result : _colRet) {
+		if (result.m_overlapDistance > _overlap) {
+			_overlap = result.m_overlapDistance;
+			_hitPos = result.m_hitPos;
+			_isHit = true;
+			_hitDir = result.m_hitDir;
+		}
+	}
+}
+
+void Utility::CalOverlap(const std::list<KdCollider::CollisionResult>& _colRet, float& _overlap, bool& _isHit, Vector3& _hitPos, Vector3& _hitDir, Vector3& _normal)
+{
+	for (const auto& result : _colRet) {
+		if (result.m_overlapDistance > _overlap) {
+			_overlap = result.m_overlapDistance;
+			_hitPos = result.m_hitPos;
+			_isHit = true;
+			_hitDir = result.m_hitDir;
+			_normal = result.m_hitNormal;
+		}
+	}
+}
+
+void Utility::HitPositionAdjust(Vector3& _pos, const Vector3& _hitDir, float _overlap)
+{
+	_pos += _hitDir * _overlap;
+}
+
+void Utility::HitPositionAdjust2D(Vector3& _pos, const Vector3& _hitDir, float _overlap)
+{
+	_pos.x += _hitDir.x * _overlap;
+	_pos.z += _hitDir.z * _overlap;
+}

@@ -30,10 +30,6 @@ public:
 	void InitFireBall();
 
 
-	void UpdateRangeCircle();
-	float circleRad = 5;
-	float circleOuter = 14;
-
 	//void InitTrailPoly();
 
 	void UpdateMatrix();

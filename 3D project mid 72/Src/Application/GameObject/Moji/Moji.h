@@ -36,36 +36,23 @@ public:
 
 	void CallImgui() override;
 
-	float mojiScale = 1;
+	
+
+private:
+	KdTexture tex;
+
 	Color mojiColor = { 1,1,1,1 };
 	float mojiAlpha = 1;
 
-
-	float dmgNum = 1;
-
 	Vector3 pos2D = { 0,0,0 };
-	int lifeSpan = 60;
-	Vector3 move = { 0,0,0 };
+	Vector2 mojiPos = { 0,0 };
 
 	Vector3 mojiOffset = { 0,1,0 };
 	Vector3 mojiDir = { 1,1,0 };
-	int plusMinus = 0;
-
-	float gravity = 0.01f;
-
-
-	float timer = 0;
-
-	string mojiPrefix = "を手に入れました";
 	string mojiText = "Hello";
-	Vector2 mojiPos = { 0,0 };
 
-	KdTexture tex;
-	Math::Rectangle messaageRect = { 0,0,1280,250 };
-
-private:
-
-	
+	float dmgNum = 1;
+	int lifeSpan = 60;
 
 
 

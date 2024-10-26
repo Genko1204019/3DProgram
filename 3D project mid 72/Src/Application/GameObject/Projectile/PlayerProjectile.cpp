@@ -61,26 +61,19 @@ void PlayerProjectile::Update()
 	}
 
 	float overlap = 0;
-	bool hit = false;
+	bool isHit = false;
+	Vector3 hitPos = {};
+	Vector3 hitDir = {};
 	Math::Vector3 normal = {};
 
-	for (auto& ret : retList) {
-		if (overlap < ret.m_overlapDistance) {
-			hit = true;
-			overlap = ret.m_overlapDistance;
-			normal = ret.m_hitNormal;
+	Utility::CalOverlap(retList, overlap, isHit, hitPos, hitDir, normal);
 
-
-		}
-	}
-
-	if (hit) {
+	if (isHit) {
 	
 
 	}
 
 
-	UpdateRangeCircle();
 
 
 }
@@ -105,15 +98,10 @@ void PlayerProjectile::InitFlySlash()
 	model = std::make_shared<KdModelWork>();
 	model->SetModelData("Asset/Models/_ProjectileObj/HItBox/SlashSkillBox.gltf");
 
-	effectId = KdEffekseerManager::GetInstance().m_nextUniqueId;
-	KdEffekseerManager::GetInstance().Play("slashFly06.efkefc", { pos }, 1, 1, true);
-
-	//slashWave2.efkefc
+	KdEffekseerManager::GetInstance().PlayById(effectId,"slashFly06.efkefc", { pos }, 1, 1, true);
 
 	scale = { 3.5,2.8,2.1 };
-
 	maxPass = 4;
-
 }
 
 void PlayerProjectile::InitMagicBall()
@@ -121,8 +109,7 @@ void PlayerProjectile::InitMagicBall()
 	model = std::make_shared<KdModelWork>();
 	model->SetModelData("Asset/Models/_ProjectileObj/Bullet/Bullet.gltf");
 
-	effectId = KdEffekseerManager::GetInstance().m_nextUniqueId;
-	KdEffekseerManager::GetInstance().Play("magicBallLoop.efkefc", { pos }, 0.449, 0.7, true); //NA_healing_001
+	KdEffekseerManager::GetInstance().PlayById(effectId,"magicBallLoop.efkefc", { pos }, 0.449, 0.7, true); //NA_healing_001
 
 	scale = { 1,1,1 };
 	maxPass = 1;
@@ -132,27 +119,12 @@ void PlayerProjectile::InitFireBall()
 {
 	model = std::make_shared<KdModelWork>();
 	model->SetModelData("Asset/Models/_ProjectileObj/Bullet/Bullet.gltf");
-	effectId = KdEffekseerManager::GetInstance().m_nextUniqueId;
-	KdEffekseerManager::GetInstance().Play("fireBall.efkefc", { pos }, 0.49, 0.7, true); //NA_healing_001
+	KdEffekseerManager::GetInstance().PlayById(effectId,"fireBall.efkefc", { pos }, 0.49, 0.7, true); //NA_healing_001
 
 	scale = { 1,1,1 };
 	maxPass = 1;
 }
 
-void PlayerProjectile::UpdateRangeCircle()
-{
-	/*if (objType == pProjectileType::pRangeCircleType) {
-		KdShaderManager::Instance().WorkAmbientController().AddConeLight(pos + Vector3(0, 2.1, 0), { 0,0,0 }, circleOuter, circleRad, { 3,3,3 });
-
-		if (circleRad < circleOuter) circleRad += 0.05;
-		else {
-			KdShaderManager::Instance().WorkAmbientController().AddConeLight(pos + Vector3(0, 2.1, 0), { 0,0,0 }, 0, 0, { 3,3,3 });
-			SetExpired();
-		}
-
-	}*/
-
-}
 
 
 
@@ -291,9 +263,6 @@ void PlayerProjectile::CallImgui()
 	//show pos	
 	ImGui::Text("pos : %f, %f, %f", pos.x, pos.y, pos.z);
 
-	//show cicrleRad circleOuter
-	ImGui::Text("circleRad : %f", circleRad);
-	ImGui::Text("circleOuter : %f", circleOuter);
 
 	//end
 	ImGui::End();

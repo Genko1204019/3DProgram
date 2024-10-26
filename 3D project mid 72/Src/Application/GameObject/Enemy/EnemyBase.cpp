@@ -13,8 +13,6 @@ void EnemyBase::Init()
 	InitCollider();
 	InitStatus();
 
-	
-
 }
 
 void EnemyBase::Update()
@@ -23,23 +21,21 @@ void EnemyBase::Update()
 	UpdateAnimation();
 	UpdateGravity();
 	UpdateStateMachine();
-
 	UpdateHpRotation();
 
-	EnemyCounterManager();
+	UpdateEnemyCounter();
 
-	CheckFacingPlayer();
 
 	GameInfo();
 	PlayerInfo();
-	CameraInfo();
-	WeaponInfo();
+	CheckFacingPlayer();
 
 }
 
 void EnemyBase::PostUpdate()
 {
 	GroundCollision();
+	EnemyCollision();
 	BodyCollision();
 }
 
@@ -67,12 +63,7 @@ void EnemyBase::SetCollider(KdCollider::RayInfo& _rayObj, Vector3 _rayPos, Vecto
 	_rayObj.m_type = _hitType;
 }
 
-void EnemyBase::SetCollider(KdCollider::SphereInfo& _sphereObj, Vector3 _sphereCenter, float _sphereRadius, UINT _hitType)
-{
-	_sphereObj.m_sphere.Center = _sphereCenter;
-	_sphereObj.m_sphere.Radius = _sphereRadius;
-	_sphereObj.m_type = _hitType;
-}
+
 
 void EnemyBase::InitModelInfo()
 {
@@ -112,38 +103,6 @@ void EnemyBase::InitModelInfo()
 		wpModelName = "Asset/Models/_EnemyObj/Fighter/FighterWp/FighterWp.gltf";
 	}
 
-	//if (objType == EnemyType::eFighter) {
-	//	eModelName = "Asset/Models/_EnemyObj/SkeletonFighter/SkeletonFighter.gltf";
-	//	equipModelName = "Asset/Models/_EnemyObj/Skeleton/SkeWarHelmet.gltf";
-	//}
-
-	/*switch (objType)
-	{
-	case EnemyType::eBoss:
-		eModelName = "Asset/Models/Enemy/EnemyBoss/EnemyBoss.gltf";
-		equipModelName = "Asset/Models/Enemy/Empty/Empty.gltf";
-		break;
-	case EnemyType::eFighter:
-		eModelName = "Asset/Models/_EnemyObj/EnemyFighter/FighterBody.gltf";
-		equipModelName = "Asset/Models/_EnemyObj/EnemyFighter/FighterEquip.gltf";
-		break;
-	case EnemyType::eMage:
-		eModelName = "Asset/Models/Enemy/EnemyMage/MageBody.gltf";
-		equipModelName = "Asset/Models/Enemy/EnemyMage/MageEquip.gltf";
-		break;	
-	case EnemyType::eHealer:
-		eModelName = "Asset/Models/Enemy/EnemyHealer/EnemyHealer.gltf";
-		equipModelName = "Asset/Models/Enemy/EnemyHealer/GoblinWeapon.gltf";
-		break;
-	case EnemyType::eWanderer:
-		eModelName = "Asset/Models/Enemy/EnemyWander/EnemyWander.gltf";
-		equipModelName = "Asset/Models/Enemy/EnemyWander/RangeWeapon.gltf";
-		break;
-	default:
-		break;
-	}*/
-
-
 	eModel = std::make_shared<KdModelWork>();
 	equipModel = std::make_shared<KdModelWork>();
 
@@ -156,7 +115,6 @@ void EnemyBase::InitAnimator()
 {
 	eAnime = make_shared<KdAnimator>();
 	equipAnime = make_shared<KdAnimator>();
-
 	SetAnime(idleAni, true);
 
 }
@@ -165,7 +123,6 @@ void EnemyBase::InitCollider()
 {
 	objCollider = std::make_unique<KdCollider>();
 	objCollider->RegisterCollisionShape("EnemyCollision", eModel, KdCollider::TypeDamage);
-
 	debugWire = std::make_unique<KdDebugWireFrame>();
 
 }
@@ -257,24 +214,17 @@ void EnemyBase::UpdateHpRotation()
 
 void EnemyBase::GroundCollision()
 {
-	KdCollider::RayInfo ray;
-	const float enableStepHigh = 0.28f;
-	SetCollider(ray, pos, Vector3(0, enableStepHigh, 0), Vector3::Down, gravity + enableStepHigh, KdCollider::TypeGround);
+	const float stepHigh = 0.28f;
+	KdCollider::RayInfo ray(KdCollider::TypeGround, pos + Vector3(0, stepHigh, 0), { 0,-1,0 }, gravity + stepHigh);
 	std::list<KdCollider::CollisionResult> retRayList;
+	float maxOverlap = 0;
+	Vector3 hitPos;
+	Vector3 hitDir;
+	bool isHit = false;
 
 	for (auto& mapObj : SceneManager::Instance().GetObjList()) {
 		if (mapObj->Intersects(ray, &retRayList)) {
-			float maxOverlap = 0;
-			Math::Vector3 hitPos;
-			bool isHit = false;
-
-			for (auto& ret : retRayList) {
-				if (maxOverlap < ret.m_overlapDistance) {
-					maxOverlap = ret.m_overlapDistance;
-					hitPos = ret.m_hitPos;
-					isHit = true;
-				}
-			}
+			Utility::CalOverlap(retRayList, maxOverlap, isHit, hitPos, hitDir);
 
 			if (isHit) {
 				pos = hitPos + Math::Vector3(0, -0.14f, 0);
@@ -285,20 +235,16 @@ void EnemyBase::GroundCollision()
 	}
 }
 
-void EnemyBase::BodyCollision()
+void EnemyBase::EnemyCollision()
 {
-	
-	KdCollider::SphereInfo eSphere;  //hit with only other enemy
+	KdCollider::SphereInfo eSphere(KdCollider::TypeDamage, pos + Vector3(0, 1.4, 0), 1.4);
 	std::list<KdCollider::CollisionResult> eRetList;
-
-	SetCollider(eSphere, pos + Vector3(0, 1.4, 0), 1.4, KdCollider::TypeDamage);
-
-	//SetDebugWire(eSphere);
 	//debugWire->AddDebugSphereByType(eSphere);
 
-	float maxOverlapMap = 0;
+	float overlapMap = 0;
 	bool isHit = false;
-	Math::Vector3 hitDir;
+	Vector3 hitDir;
+	Vector3 hitPos;
 
 	for (auto& obj : SceneManager::Instance().GetObjList()) {
 		if (obj->GetTag() == GameTag::EnemyTag) {
@@ -309,77 +255,39 @@ void EnemyBase::BodyCollision()
 		}
 	}
 
-	for (auto& ret : eRetList) {
-		if (maxOverlapMap < ret.m_overlapDistance) {
-			maxOverlapMap = ret.m_overlapDistance;
-			hitDir = ret.m_hitDir;
-			isHit = true;
-		}
-	}
+	Utility::CalOverlap(eRetList, overlapMap, isHit, hitPos, hitDir);
 
 	if (isHit) {
-		hitDir.y = 0;
-		pos.x += hitDir.x * maxOverlapMap;
-		pos.z += hitDir.z * maxOverlapMap;
-		Math::Vector3 _nowPos = GetPos();
-		SetPos(pos);
+		//hitDir.y = 0;
+		//pos.x += hitDir.x * overlapMap;
+		//pos.z += hitDir.z * overlapMap;
+		//Math::Vector3 _nowPos = GetPos();
+		//SetPos(pos);
+
+		Utility::HitPositionAdjust2D(pos, hitDir, overlapMap);
 
 	}
+}
 
-	//hit with all object map player 
-	KdCollider::SphereInfo bodySphere;
+void EnemyBase::BodyCollision()
+{
+	KdCollider::SphereInfo bodySphere(KdCollider::TypeDamage | KdCollider::TypeGround, pos + Vector3(0, 1.4, 0), 1.4);
 	std::list<KdCollider::CollisionResult> retHitList;
-	if (objType == EnemyType::eWanderer) SetCollider(bodySphere, pos + Vector3(0, 1.4, 0), 1, KdCollider::TypeDamage | KdCollider::TypeGround);
-	else SetCollider(bodySphere, pos + Vector3(0, 1.4, 0), 1, KdCollider::TypeDamage | KdCollider::TypeGround);
-
+	float overlap = 0;
+	bool isHit = false;
+	Vector3 hitDir;
+	Vector3 hitPos;
 	//debugWire->AddDebugSphereByType(bodySphere);
 
 	for (auto& obj : SceneManager::Instance().GetObjList()) {
 		if (obj->Intersects(bodySphere, &retHitList)) {
-			float maxOverlapMap = 0;
-			bool isHit = false;
-			Math::Vector3 hitDirMap;
+			Utility::CalOverlap(retHitList, overlap, isHit, hitPos, hitDir);
 
-			for (auto& ret : retHitList) {
-				if (maxOverlapMap < ret.m_overlapDistance) {
-					maxOverlapMap = ret.m_overlapDistance;
-					hitDirMap = ret.m_hitDir;
-					isHit = true;
-
-					if (isHit) {
-						if (obj->GetTag() == GameTag::PlayerTag && nowState != EnemyState::eWanderDead) {
-							if (hp > 0) {
-								hitDirMap.Normalize();
-								pos.x += hitDirMap.x * maxOverlapMap;
-								pos.z += hitDirMap.z * maxOverlapMap;
-
-							}
-							
-							
-
-						}
-
-						if (obj->GetTag() == GameTag::MapTag) {
-							if (obj->GetType() == MapType::WallType) {
-								hitDirMap.Normalize();
-								pos.x += hitDirMap.x * maxOverlapMap;
-								pos.z += hitDirMap.z * maxOverlapMap;
-							}
-
-						}
-
-						if (obj->GetTag() == GameTag::StageTag) {
-							hitDirMap.Normalize();
-							pos.x += hitDirMap.x * maxOverlapMap;
-							pos.z += hitDirMap.z * maxOverlapMap;
-						
-						}
-
-					}
-
-				}
+			if (isHit) {
+				if (obj->GetTag() != MapTag && obj->GetTag() != StageTag && obj->GetTag() != PlayerTag) return;
+				if (hp <= 0) return;
+				Utility::HitPositionAdjust2D(pos, hitDir, overlap);
 			}
-
 		}
 	}
 
@@ -390,12 +298,9 @@ void EnemyBase::CheckFacingPlayer()
 {
 	Vector3 forVec = moveVec; //to ppt
 	forVec.Normalize();
-
 	Vector3 toPlayerVec = playerPos - pos;
 	toPlayerVec.Normalize();
-
 	float dot = forVec.Dot(toPlayerVec);
-
 	float angle = acos(dot);
 	angleToPlayer = DirectX::XMConvertToDegrees(angle);
 
@@ -403,37 +308,28 @@ void EnemyBase::CheckFacingPlayer()
 	else isFacingPlayer = false;
 
 
-
 	const int numRays = 140;
 	const float sectorAngle = 45;
 	const float rayRange = 14.0f;
 	Vector3 rayStartPos = pos + Vector3(0, 1.4f, 0);
-
 	float angleStep = sectorAngle / (numRays - 1);
-
 	Vector3 Dir = moveVec;
 	Dir.Normalize();
-
 	float halfSector = sectorAngle / 2.0f;
 
 	for (int i = 0; i < numRays; ++i)
 	{
 		float angleOffset = -halfSector + (i * angleStep);
-
 		Matrix rotation = Matrix::CreateRotationY(DirectX::XMConvertToRadians(angleOffset));
 		Vector3 rayDir = Vector3::TransformNormal(Dir, rotation);
-
 		KdCollider::RayInfo searchRay;
 		SetCollider(searchRay, pos, {}, rayDir, rayRange, KdCollider::TypeDamage | KdCollider::TypeGround);
 		//SetDebugWire(searchRay, Color(1, 0, 0, 1));
 		
-
-
-
 	}
 }
 
-void EnemyBase::EnemyCounterManager()
+void EnemyBase::UpdateEnemyCounter()
 {
 	stateCnt -= 1 * gameSpd;
 	mutekiCnt -= 1 * gameSpd;
@@ -473,17 +369,12 @@ void EnemyBase::PlayerInfo()
 
 	if (spPlayer) {
 		playerPos = spPlayer->GetPosition();
-		distToPlayer = (Vector3(playerPos.x, 0, playerPos.z) - Vector3(pos.x, 0, pos.z)).Length();
 	}
 
 	distToPlayer = (Vector3(playerPos.x, 0, playerPos.z) - Vector3(pos.x, 0, pos.z)).Length();
 	dirToPlayer = playerPos - pos;
 	dirToPlayer.Normalize();
 }
-
-
-
-
 
 void EnemyBase::GameInfo()
 {

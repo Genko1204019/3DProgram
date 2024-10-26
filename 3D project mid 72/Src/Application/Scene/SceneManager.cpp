@@ -79,7 +79,6 @@ void SceneManager::DrawMoji()
 
 	if (GameManager::Instance().GetIsInventoryOpen()) {
 		rtp.CreateRenderTarget(1280, 560, true);
-
 		rtc.ChangeRenderTarget(rtp.m_RTTexture);
 		rtp.ClearTexture();
 
@@ -92,10 +91,7 @@ void SceneManager::DrawMoji()
 			KdShaderManager::Instance().m_spriteShader.SetMatrix(Matrix::Identity);
 
 			InventoryManager::Instance().DrawMoji();
-			if (GetAsyncKeyState(VK_BACK)) {
-				KdShaderManager::Instance().m_spriteShader.DrawString(-640, -140, "ENTERキーで使用", kWhiteColor, 1);
-
-			}
+			KdShaderManager::Instance().m_spriteShader.DrawString(-640, -140, "ENTERキーで使用", kWhiteColor, 1);
 
 		}
 		KdShaderManager::Instance().m_spriteShader.End();
@@ -107,7 +103,6 @@ void SceneManager::DrawMoji()
 
 		}
 		KdShaderManager::Instance().m_StandardShader.EndLit();
-
 
 		rtc.UndoRenderTarget();
 		KdShaderManager::Instance().m_spriteShader.DrawTex(rtp.m_RTTexture, 0, 0);
@@ -159,6 +154,7 @@ const std::list<std::shared_ptr<KdGameObject>>& SceneManager::GetObjList()
 void SceneManager::AddObject(const std::shared_ptr<KdGameObject>& obj)
 {
 	m_currentScene->AddObject(obj);
+	GameManager::Instance().SetEntityNum(1);
 }
 
 void SceneManager::ChangeScene(SceneType sceneType)

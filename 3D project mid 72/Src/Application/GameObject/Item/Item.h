@@ -1,4 +1,6 @@
-﻿#pragma once
+﻿//Item.h file:
+
+#pragma once
 
 class Item : public KdGameObject
 {
@@ -21,8 +23,6 @@ public:
 	void ItemGetPickUP();
 
 	void CallImgui() override;
-
-
 
 	bool canEquip = false;
 	bool canConsume = false;
@@ -67,12 +67,10 @@ public:
 	Vector2 itemPosScroll = { 0,0 };
 
 	int quantity = 1;
-
 	int potionType = 0;
 
 	float rarity = 1;
 	int rareType = ItemRarity::Normal;
-
 
 	int auraEffId = 0;
 	bool isEff = false;

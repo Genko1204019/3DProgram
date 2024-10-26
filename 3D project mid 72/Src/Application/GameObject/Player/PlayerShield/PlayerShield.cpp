@@ -5,18 +5,16 @@ void PlayerShield::Init()
 
 	objTag = GameTag::PlayerShieldTag;
 
-
-	model = make_shared<KdModelWork>();
-
 	modelName = "Asset/Models/_WeaponObj/Shield/ShieldNormal.gltf";
+	model = make_shared<KdModelWork>();
 	model->SetModelData(modelName);
 
 	anime = make_shared<KdAnimator>();
+	SetAnime("Idle", false);
 
 	debugWire = make_unique<KdDebugWireFrame>();
 
 
-	SetAnime("Idle",false);
 }
 
 void PlayerShield::Update()

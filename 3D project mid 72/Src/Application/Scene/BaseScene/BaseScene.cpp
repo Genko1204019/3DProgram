@@ -15,7 +15,10 @@ void BaseScene::PreUpdate()
 	
 	auto it = m_objList.begin();
 	while (it != m_objList.end()){
-		if ((*it)->IsExpired()) it = m_objList.erase(it);
+		if ((*it)->IsExpired()) {
+			it = m_objList.erase(it);
+			GameManager::Instance().SetEntityNum(-1);
+		}
 		else					++it;	
 	}
 

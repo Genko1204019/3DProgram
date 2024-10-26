@@ -9,12 +9,8 @@ void BattleEnemy::Init()
 {
 	InitBattleEnemy();
 	InitAtkInfo();
-
 	EnemyBase::Init();
-
 	InitState();
-
-
 	EquipWeapon();
 
 	
@@ -24,14 +20,11 @@ void BattleEnemy::Init()
 void BattleEnemy::Update()
 {
 	EnemyBase::Update();
-
-	BattleCounterManager();
-//	CameraInfo();
+	UpdateBattleCounter();
 	WeaponInfo();
+	CameraInfo();
+	UpdateStatus();
 
-	HpBarBuffer();
-
-	//FindNodePoint();
 
 
 }
@@ -39,17 +32,13 @@ void BattleEnemy::Update()
 void BattleEnemy::PostUpdate()
 {
 	EnemyBase::PostUpdate();
-
 	DmgCollision();
-
-	CameraInfo();
 
 }
 
 void BattleEnemy::DrawLit()
 {
 	EnemyBase::DrawLit();
-	//KdShaderManager::Instance().m_StandardShader.DrawModel(*lockOnModel, worldMat, kWhiteColor, emitRate);
 
 	if (isLockOn) {
 		lockOnAngle+=2.8;
@@ -72,32 +61,30 @@ void BattleEnemy::DrawSprite()
 	if (hp <= 0) return;
 	if (nowState == EnemyState::eSpawn) return;
 
-	Color hpColor = { 1,1,1,hpBarAlpha };
-	bufferColor = { 0,1,0.23,hpBarAlpha };
+	Vector3 barScale = { 0.56,0.7,1 };
+	Vector3 frameScale = { 0.56,0.7,1 };
 
+	//HpBarFrame
+	Color hpColor = { 1,1,1,hpBarAlpha };
+	Math::Rectangle hpBaseFrameRect = { 0,0,276,30 };
 	KdShaderManager::Instance().m_spriteShader.SetMatrix(Matrix::CreateScale(frameScale.x, frameScale.y, frameScale.z) * Matrix::CreateTranslation(pos2D.x, pos2D.y, 0));
 	KdShaderManager::Instance().m_spriteShader.DrawTex(&hpBaseFrameTex, 0, 0, hpBaseFrameRect.width, hpBaseFrameRect.height, &hpBaseFrameRect, &hpColor, { 0,0.5 }); //fine
 	KdShaderManager::Instance().m_spriteShader.SetMatrix(Matrix::Identity);
 
-
-	hpBufferRatio = hpBufferMax / hpBufferDefault;
+	//HpBarBuffer
+	float hpBufferRatio = hpBufferMax / hpBufferDefault;
+	Color bufferColor = { 0,1,0.23,hpBarAlpha };
 	Math::Rectangle hpBufferRect = { 0,0,(int)(276 * hpBufferRatio),30 };
-
 	KdShaderManager::Instance().m_spriteShader.SetMatrix(Matrix::CreateScale(barScale.x, barScale.y, barScale.z) * Matrix::CreateTranslation(pos2D.x, pos2D.y, 0));
 	KdShaderManager::Instance().m_spriteShader.DrawTex(&hpBarTex, 0, 0, hpBufferRect.width, hpBufferRect.height, &hpBufferRect, &bufferColor, { 0,0.5 }); //fine
-
 	KdShaderManager::Instance().m_spriteShader.SetMatrix(Matrix::Identity);
 
-	hpBarRatio = hp / maxHp;
-	hpBarRect = { 0,0,(int)(276 * hpBarRatio),30 };
-
+	//HpBar
+	float hpBarRatio = hp / maxHp;
+	Math::Rectangle hpBarRect = { 0,0,(int)(276 * hpBarRatio),30 };
 	KdShaderManager::Instance().m_spriteShader.SetMatrix(Matrix::CreateScale(barScale.x, barScale.y, barScale.z) * Matrix::CreateTranslation(pos2D.x, pos2D.y, 0));
 	KdShaderManager::Instance().m_spriteShader.DrawTex(&hpBarTex, 0, 0, hpBarRect.width, hpBarRect.height, &hpBarRect, &hpColor, { 0,0.5 }); //fine
 	KdShaderManager::Instance().m_spriteShader.SetMatrix(Matrix::Identity);
-
-
-	
-
 
 }
 
@@ -107,18 +94,7 @@ void BattleEnemy::DrawMoji()
 
 void BattleEnemy::DrawMini()
 {
-	//Math::Rectangle enemyRect = { 0,0,32,32 };
-	//miniMapPos2D.x = scaleFactor * pos.x + xOffset;
-	//miniMapPos2D.y = scaleFactor * pos.z + yOffset;
-
-	//Matrix sMat = Matrix::CreateScale(100, 100, 100);
-	//Matrix tmat = Matrix::CreateTranslation(miniMapPos2D.x - GameManager::Instance().scrollX, miniMapPos2D.y - GameManager::Instance().scrollY, 0);
-	//Matrix fMat = sMat * tmat;
-	//KdShaderManager::Instance().m_spriteShader.SetMatrix(fMat);	
-
-	//KdShaderManager::Instance().m_spriteShader.DrawTex(enemyIconTex, 0, 0, enemyRect.width, enemyRect.height, &enemyRect, &kWhiteColor, { 0.5,0.5 }); //fine
-	//KdShaderManager::Instance().m_spriteShader.SetMatrix(Matrix::Identity);
-
+	
 
 }
 
@@ -131,12 +107,9 @@ void BattleEnemy::InitBattleEnemy()
 	lockOnModel = std::make_shared<KdModelWork>();
 	lockOnModel->SetModelData(lockOnModelName);
 
-	hpBarTex.Load("Asset/Textures/gauge_A_red_l_s.png");
-	hpBaseFrameTex.Load("Asset/Textures/gauge_A_l_s.png");
-
-	hpBarFrameTex.Load("Asset/Textures/gauge_A_red_l.png");
-
-
+	hpBarTex.Load("Asset/Textures/UiBar/gauge_A_red_l_s.png");
+	hpBaseFrameTex.Load("Asset/Textures/UiBar/gauge_A_l_s.png");
+	hpBarFrameTex.Load("Asset/Textures/UiBar/gauge_A_red_l.png");
 
 	if (objType == EnemyType::eBoss) {
 		maxHp = 400;
@@ -175,6 +148,8 @@ void BattleEnemy::CameraInfo()
 	if (spCamera) {
 		
 		Vector3 headWorldPos = {};
+		Vector3 hpOffset = { -78 ,4.2f,0 };
+
 		if(objType == EnemyType::eBoss) headWorldPos = GetPos() + Vector3(0, 7.7f, 0);
 		else headWorldPos = GetPos() + Vector3(0, 4.2f, 0);
 		spCamera->WorkCamera()->ConvertWorldToScreenDetail(headWorldPos, pos2D);
@@ -189,16 +164,17 @@ void BattleEnemy::WeaponInfo()
 	if (spWeapon) {
 		spWeapon->SetAniSpd(aniSpd);
 		spWeapon->SetMatrix(worldMat);
-		spWeapon->isAtkEnable = isAtkEnable();
+		spWeapon->SetIsAtkEnable(isAtkEnable()) ;
 		spWeapon->SetEnemyPos(pos);
-		spWeapon->enemyRotMat = rotMat;
+		spWeapon->SetEnemyRotMat(rotMat);
 	}
 }
 
 
 
-void BattleEnemy::BattleCounterManager()
+void BattleEnemy::UpdateBattleCounter()
 {
+	spawnCnt--;
 	hitStopCnt -= 1 * gameSpd;
 	stunCnt -= 1 * gameSpd;
 
@@ -206,9 +182,7 @@ void BattleEnemy::BattleCounterManager()
 	atkFrame += 1 * gameSpd * aniSpd;
 	atkWaitCnt -= 1 * gameSpd;
 
-	spawnCnt--;
-
-	showHpCnt -= 1 * gameSpd;
+	displayHpCnt -= 1 * gameSpd;
 
 }
 
@@ -216,26 +190,19 @@ void BattleEnemy::DmgCollision()
 {
 	if (hp <= 0) return;
 
-	KdCollider::SphereInfo bodySphere;
-	SetCollider(bodySphere, pos + Vector3(0, 1.49, 0), 1.21, KdCollider::TypeBump | KdCollider::TypeDamage);
+	KdCollider::SphereInfo bodySphere(KdCollider::TypeBump | KdCollider::TypeDamage, pos + Vector3(0, 1.49, 0), 1.21);
 	std::list<KdCollider::CollisionResult> retHitList;
 	//debugWire->AddDebugSphereByType(bodySphere);
 
+	float overlap = 0;
+	Vector3 hitPos;
+	Vector3 hitDir;
+	bool isHit = true;
+
 	for (auto& obj : SceneManager::Instance().GetObjList()) {
 		if (obj->GetTag() == GameTag::PlayerWeaponTag || obj->GetTag() == GameTag::PlayerProjectileTag) {
-
 			if (obj->Intersects(bodySphere, &retHitList)) {
-				float maxOverlap = 0;
-				Math::Vector3 hitPos;
-				bool isHit = true;
-
-				for (auto& ret : retHitList) {
-					if (maxOverlap < ret.m_overlapDistance) {
-						maxOverlap = ret.m_overlapDistance;
-						hitPos = ret.m_hitPos;
-						isHit = true;
-					}
-				}
+				Utility::CalOverlap(retHitList, overlap, isHit, hitPos, hitDir);
 
 				if (isHit) {
 
@@ -247,7 +214,7 @@ void BattleEnemy::DmgCollision()
 					else {
 						auto player = wpPlayer.lock(); //can't cast obj to player class as it's weapon but not player
 						if (player->ReadyForAtk() && mutekiCnt < 0) {
-							player->OnGiveDmg();
+							player->UpdateHitFrame();
 							OnGetDmg(hitPos, false, wpPlayer.lock()->GetatkDmg());
 						}
 					}
@@ -255,19 +222,15 @@ void BattleEnemy::DmgCollision()
 					
 
 				}
-
 			}
-
-
 		}
 	}
+
 }
 
-void BattleEnemy::HpBarBuffer()
+void BattleEnemy::UpdateStatus()
 {
 	hpBufferCd--;
-
-
 
 	while (hpBuffer > 0 && hpBufferCd < 0) {
 		if(objType == EnemyType::eBoss) hpBufferCd = 1;
@@ -276,7 +239,7 @@ void BattleEnemy::HpBarBuffer()
 		hpBuffer -= 1;
 	}
 
-	if (showHpCnt > 0 || isLockOn) {
+	if (displayHpCnt > 0 || isLockOn) {
 		hpBarAlpha = 1;
 	}
 	else {
@@ -291,7 +254,6 @@ void BattleEnemy::EnemySpawn()
 	if (spawnCnt < 0 && !canSpawn) {
 		if(objType == EnemyType::eBoss) 	SetAnime("Spawn_Ground_Skeletons", false);
 		else								SetAnime("Skeletons_Awaken_Floor_Long", false);
-
 
 		canSpawn = true;
 		darkSpawnEffId = KdEffekseerManager::GetInstance().m_nextUniqueId;
@@ -314,7 +276,6 @@ void BattleEnemy::SpawnTransition()
 	nowState = EnemyState::eSpawn;
 	SetAnime("Death_A_Pose", false);
 
-
 	//pos.y = -201;	
 }
 
@@ -329,10 +290,8 @@ void BattleEnemy::EnemyStun()
 	DeathTransition();
 	UpdateRotation(dirToPlayer);
 
-
 	if (eAnime->IsAnimationEnd() && stunCnt <= 0) {
 		stateCnt = 0;
-
 
 		switch (objType)
 		{
@@ -349,15 +308,6 @@ void BattleEnemy::EnemyStun()
 			break;
 		}
 
-		//rand 30 % to backJump
-		/*if (Utility::Rnd(0, 100) < 77) {
-			IdleTransition();
-		}
-		else {
-			BackJumpTransition(dirToPlayer, 7);
-
-		}*/
-	
 
 	}
 	
@@ -376,14 +326,6 @@ void BattleEnemy::StunTransition()
 void BattleEnemy::EnemyBackJump()
 {
 	
-	//float lerpSpeed = 2.0f;  // Speed at which the enemy moves to the target
-	//jumpProgress += lerpSpeed * GameManager::Instance().GetDeltaTime();
-	//pos = Vector3::Lerp(pos, backJumpTargetPos, jumpProgress);
-
-	/*if (eAnime->IsAnimationEnd() && pos.y <-14 && jumpProgress >= 1.0f) {
-		IdleTransition();
-	}*/
-
 	DeathTransition();
 
 	UpdateRotation(dirToPlayer);
@@ -400,7 +342,6 @@ void BattleEnemy::EnemyBackJump()
 		IdleTransition();
 
 	}
-
 
 
 }
@@ -495,10 +436,6 @@ void BattleEnemy::EnemyIdle()
 	default:
 		break;
 	}
-	
-
-
-
 
 }
 
@@ -591,8 +528,6 @@ void BattleEnemy::EnemyAttack()
 	else if (objType == EnemyType::eBoss) {
 
 		DeathTransition();
-
-
 
 		if (atkCd < 0 && !canAtkAnime) {
 			canAtkAnime = true;
@@ -769,6 +704,11 @@ void BattleEnemy::MageWalk()
 void BattleEnemy::MageWalkTransition()
 {
 	if (stateCnt < 0) {
+		float walkRangeXMax = 35;
+		float walkRangeXMin = -21;
+		float walkRangeZMax = 35;
+		float walkRangeZMin = 0;
+
 		stateCnt = Utility::Rnd(210,350);
 		stateMachine.ChangeState(this, new eMageWalkState());
 		nowState = EnemyState::eMageWalk;
@@ -786,25 +726,22 @@ void BattleEnemy::MageAtk()
 
 	if (atkCd > 0) {
 		Vector3 effPos = { pos + Vector3(0,0.3,0) };
-		KdEffekseerManager::GetInstance().SetPosById(mageAtkEffid, effPos);
+		KdEffekseerManager::GetInstance().SetPosById(mageAtkEffId, effPos);
 	}
 
 	if (atkCd < 0) {
 
 		KdAudioManager::Instance().PlayMageAtkSE();
 
-		KdEffekseerManager::GetInstance().StopEffectById(mageAtkEffid);	
-		mageAtkEffid = -1;
+		KdEffekseerManager::GetInstance().StopEffectById(mageAtkEffId);	
+		mageAtkEffId = -1;
 
 		SetAnime("Spellcast_Summon", false);
 
 		Vector3 headPosition = pos + Vector3(0, 2.8f, 0);
-
 		float totalSpread = 110.0f * DirectX::XM_PI / 180.0f;  
 		float halfSpread = totalSpread / 2.0f;
-
 		float spawnDistance = 4.9;
-
 		float angleStep = totalSpread / (3 - 1); 
 
 
@@ -852,8 +789,7 @@ void BattleEnemy::MageAtkTransition()
 
 		SetAnime("Spellcasting", true);
 
-		mageAtkEffid = KdEffekseerManager::GetInstance().m_nextUniqueId;
-		KdEffekseerManager::GetInstance().Play("NA_v2_3d_Magic Circle_dark.efkefc", { pos + Vector3(0,0.3,0) }, 1.4, 1, false);
+		KdEffekseerManager::GetInstance().PlayById(mageAtkEffId,"NA_v2_3d_Magic Circle_dark.efkefc", { pos + Vector3(0,0.3,0) }, 1.4, 1, false);
 
 	//}
 }
@@ -861,8 +797,8 @@ void BattleEnemy::MageAtkTransition()
 void BattleEnemy::ExitMageAtk()
 {
 	aniSpd = 1;
-	if (mageAtkEffid != -1) KdEffekseerManager::GetInstance().StopEffectById(mageAtkEffid);
-	mageAtkEffid = -1;
+	if (mageAtkEffId != -1) KdEffekseerManager::GetInstance().StopEffectById(mageAtkEffId);
+	mageAtkEffId = -1;
 }
 
 void BattleEnemy::MageRangeAtk()
@@ -912,8 +848,12 @@ void BattleEnemy::BossMoveTransition()
 void BattleEnemy::BossSummon()
 {
 	
-	//move to SpinTargetPosA
 	Vector3 dir;
+	Vector3 spinTargetA = { 5.9,-14.6,-2.8 };
+	Vector3 spinTargetB = { 28.2,-14.6,30.7 };
+	Vector3 spinTargetC = { -22.3,-14.6,20.8 };
+	Vector3 spinTargetD = { 7.5 ,-14.6,28 }; // 7.5 ,-14.6,28
+	Vector3 spinTargetPlayer = { 0,0,0 };
 
 	if (spinProgress == 1) {
 		dir = spinTargetA - pos;
@@ -1020,7 +960,7 @@ void BattleEnemy::ExitSummon()
 void BattleEnemy::BossJumpAtk()
 {
 
-	//homing toward centerPos until reach the target
+	Vector3 centerPos = { 7.5,-14.6,21 };
 
 	if (hasReachedtarget) {
 		absorbEffCnt--;
@@ -1040,8 +980,7 @@ void BattleEnemy::BossJumpAtk()
 		SetAnime("Spellcast_Raise", false);
 		hasReachedtarget = true;
 		atkCd = 0;
-		absorbEffId = KdEffekseerManager::GetInstance().m_nextUniqueId;
-		KdEffekseerManager::GetInstance().Play("absorbPurple.efkefc", { pos + Vector3(0,4.2,0) }, 0.77, 0.7, false);
+		KdEffekseerManager::GetInstance().PlayById(absorbEffId,"absorbPurple.efkefc", { pos + Vector3(0,4.2,0) }, 0.77, 0.7, false);
 	}
 	else if (atkCd < 0 && absorbEffCnt < 0) {
 
@@ -1054,17 +993,8 @@ void BattleEnemy::BossJumpAtk()
 		atkCd = 140;
 		KdAudioManager::Instance().PlayPlayerSlashWaveSE();
 
-		// Create 5 projectiles evenly distributed along 360 degrees
-		/*const int numProjectiles = 5;
-		const float angleIncrement = 270.0f / numProjectiles;*/
-
-		/* int numProjectiles = GameManager::Instance().testNum;
-		 float angleIncrement = GameManager::Instance().testAngle / numProjectiles;*/
-
-		/*int numProjectiles;
-		if (Utility::Rnd(0, 100) < 50) numProjectiles = 5;
-		else numProjectiles = 4;
-		float angleIncrement = 360 / numProjectiles;*/
+		static int numProjectiles = 5;
+		const float shotAngle = 360;
 
 		if (numProjectiles == 4) numProjectiles = 5;
 		else numProjectiles = 4;
@@ -1145,26 +1075,11 @@ void BattleEnemy::BossJumpAtkTransition()
 
 		absorbEffCnt = 210;
 
-		numProjectiles = 4;
-		shotAngle = 360;
-	}
-}
-
-void BattleEnemy::BossSlashWaveAtkTransition()
-{
-	if (stateCnt <= 0) {
-		stateCnt = 490;
-		atkCd = Utility::Rnd(210, 220);
-		stateMachine.ChangeState(this, new eBossJumpAtkState());
-		nowState = EnemyState::eBossSlashWaveAtk;
-		SetAnime(backJumpAni, false);
 	}
 }
 
 void BattleEnemy::OnGetDmg(Vector3 _hitPos , bool _isBlowAway, float dmgToGet)
 {
-
-
 	if (hp <= 0) return;
 
 	if (GameManager::Instance().GetBattleEnemyNum() == 1) {
@@ -1172,19 +1087,16 @@ void BattleEnemy::OnGetDmg(Vector3 _hitPos , bool _isBlowAway, float dmgToGet)
 
 		if (dmgPredict <= 0) {
 			GameManager::Instance().SetGameSpd(0.14);
-			GameManager::Instance().endBattleCnt == 350;
-			GameManager::Instance().isEndBattle = true;
+			GameManager::Instance().SetEndBattleCnt(210);
+			GameManager::Instance().SetIsEndBattle(true);
 
 			KdAudioManager::Instance().battleBgm->Stop();
 			KdAudioManager::Instance().PlayFinalHitSE();
 		}
 	}
 	
-
-	auto player = wpPlayer.lock();
-
 	mutekiCnt = 35;
-	showHpCnt = 140;
+	displayHpCnt = 210;
 
 	shared_ptr<Moji> moji = make_shared<Moji>();
 	moji->SetType(MojiType::DmgMoji);
@@ -1201,6 +1113,8 @@ void BattleEnemy::OnGetDmg(Vector3 _hitPos , bool _isBlowAway, float dmgToGet)
 	getHitDir.Normalize();
 	float yaw = atan2(getHitDir.x, getHitDir.z);
 
+	auto player = wpPlayer.lock();
+
 	if (objType == EnemyType::eBoss)	getHitPos = { 0,0,0 };
 	else								getHitPos = getHitDir * player->GetpushEnemyPow();
 	KdEffekseerManager::GetInstance().Play("hitEff02.efkefc", { _hitPos + getHitPos }, 1, 0.7, false);
@@ -1216,17 +1130,6 @@ void BattleEnemy::OnGetDmg(Vector3 _hitPos , bool _isBlowAway, float dmgToGet)
 	}
 	
 	KdAudioManager::Instance().PlaySwordHitSE();
-
-	
-	 
-	//BlowAwayTransition(getHitDir, 7.7, -0.49);
-
-	//add knockBack
-	//canKnockBack = true;
-
-	
-
-
 	
 }
 
@@ -1253,33 +1156,8 @@ void BattleEnemy::CallImgui()
 	//show rotangle
 	ImGui::SliderFloat("rotAngle", &rotAngle, -180, 180);
 
-	//slider float hpOffset.xyz
-	
-	////slider float barScale x y z
-	//ImGui::SliderFloat("barScale.x", &barScale.x, 0, 5);
-	//ImGui::SliderFloat("barScale.y", &barScale.y, 0, 5);
-	//ImGui::SliderFloat("barScale.z", &barScale.z, 0, 5);
-	////frameScale
-	//ImGui::SliderFloat("frameScale.x", &frameScale.x, 0, 5);
-	//ImGui::SliderFloat("frameScale.y", &frameScale.y, 0, 5);
-	//ImGui::SliderFloat("frameScale.z", &frameScale.z, 0, 5);
-	//
-	////show hpoffset.x
-	//ImGui::SliderFloat("hpOffset.x", &hpOffset.x, -500, 500);
-
-	////color4 bufferColor
-	//ImGui::ColorEdit4("bufferColor", (float*)&bufferColor);
-
 	//show backJumpTargetPos
 	ImGui::Text("backJumpTargetPos : %f, %f, %f", backJumpTargetPos.x, backJumpTargetPos.y, backJumpTargetPos.z);
-
-
-	//show NodePos
-	//ImGui::Text("NodePos : %f, %f, %f", nodePos.x, nodePos.y, nodePos.z);
-
-	//show jumpProgress
-	ImGui::Text("jumpProgress : %f", jumpProgress);
-
 
 
 	//show hpBuffer related 

@@ -18,19 +18,19 @@ public:
 	void PostUpdate() override;
 	void DrawLit() override;
 	void GenerateDepthMapFromLight() override;
-
 	void DrawMini() override;
 
 	void InitWanderEnemy();
 
 	void WeaponInfo() override;
 
-	void WanderCounterManager();
-
-	void UpdateEmmit();
-
 	void DmgCollision();
 
+	void UpdateWanderCounter();
+	void UpdateEmmit();
+	void UpdatePatrolPoint();
+
+	//Action
 	void EnemyPatrol();
 	void PatrolTransition();
 
@@ -56,7 +56,6 @@ public:
 private:
 
 	shared_ptr<KdSquarePolygon>  alertPoly = nullptr;
-	string alertModelName = "";
 
 
 
@@ -70,6 +69,7 @@ private:
 	//EnemyDizzy 
 	bool isDizzy = false;
 	float dizzyCnt = 0;
+	int dizzyeffId = 0;
 
 	//Patrol Logic
 	Vector2 enemyPoint = { 0,0 };
@@ -87,19 +87,15 @@ private:
 	float distToPatrolTarget = 0.f;
 	int patrolOrder = 0;
 	Vector3 dirToNextTarget = {};
-
-
 	vector<PathNode> path;
 
 	float followSpd = 0.14f;
 
 
-	int dizzyeffId = 0;
 
-
+	//MiniMap
 	shared_ptr<KdTexture> enemyIconTex = nullptr;
 	shared_ptr<KdTexture> enemyIconAtkTex = nullptr;
-
 	float xOffset = -500;
 	float yOffset = 200;
 	float scaleFactor = 28.0f / 6.0f;

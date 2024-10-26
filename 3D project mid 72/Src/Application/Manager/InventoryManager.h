@@ -1,4 +1,5 @@
-﻿#pragma once
+﻿//InventoryManager.h file:
+#pragma once
 #include"json.hpp"
 
 using json = nlohmann::json;
@@ -34,7 +35,6 @@ public:
 	void SpawnItemByType(int type, Vector3 _spawnPos);
 	void RandomSpawnItem(Vector3 _spawnPos);
 
-	void DoSpawnItem();
 	void DoRandomSpawnItem(Vector3 _spawnPos);
 
 	void HandleItemStatus();
@@ -77,7 +77,6 @@ public:
 
 private:
 
-	float spawnCd = 0;
 
 	//weak_ptr player
 	weak_ptr<Player> wpPlayer;

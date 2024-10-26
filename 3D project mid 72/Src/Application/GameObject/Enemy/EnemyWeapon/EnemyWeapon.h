@@ -27,6 +27,14 @@ public:
 	//set worldMat
 	void SetMatrix(const Matrix& m) { worldMat = m; }
 
+	//get set isAtkEnable
+	bool GetIsAtkEnable() { return isAtkEnable; }
+	void SetIsAtkEnable(bool _isEnable) { isAtkEnable = _isEnable; }
+
+	//get set enemyRotMat
+	Matrix GetEnemyRotMat() { return enemyRotMat; }
+	void SetEnemyRotMat(Matrix _mat) { enemyRotMat = _mat; }
+
 	void Init() override;
 	void Update() override;
 	void DrawLit() override;
@@ -40,11 +48,9 @@ public:
 
 	void CallImgui() override;
 
-	bool isAtkEnable = false;
 
 	Vector3 enemyPos = {};
 
-	Matrix enemyRotMat = {};
 
 private:
 
@@ -55,9 +61,11 @@ private:
 	float aniSpd = 0.4777;
 
 	Vector3 wpPos = { 0,0,0 };
-
 	Vector3 wpScale = { 1,1,1 };
 
+	bool isAtkEnable = false;
+
+	Matrix enemyRotMat = {};
 
 
 };

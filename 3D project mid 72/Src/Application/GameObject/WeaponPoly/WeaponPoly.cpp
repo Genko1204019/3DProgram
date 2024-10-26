@@ -5,14 +5,12 @@ void WeaponPoly::Init()
 {
 	poly = std::make_shared<KdSquarePolygon>();
 	poly->SetMaterial("Asset/Textures/sword_effect.png");
-
 	trail.SetMaterial("Asset/Textures/sword_effect.png");
 
 }
 
 void WeaponPoly::Update()
 {
-	scaleMat = Matrix::CreateScale(GameManager::Instance().GetPolyScale());
 
 }
 
@@ -33,18 +31,6 @@ void WeaponPoly::DrawBright()
 
 void WeaponPoly::CallImgui()
 {
-
-	//slider float scale xyz
-	ImGui::SliderFloat("Scale.x", &scale.x, 1, 10);
-
-	//.y
-	ImGui::SliderFloat("Scale.y", &scale.y, 1, 10);
-
-	//.z
-
-	ImGui::SliderFloat("Scale.z", &scale.z, 1, 10);
-
-
 
 
 }

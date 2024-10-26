@@ -102,23 +102,19 @@ void EnemyProjectile::InitSlashWaveAtk()
 void EnemyProjectile::BodyCollision()
 {
 	KdCollider::SphereInfo bodySphere(KdCollider::TypeGround, pos, 0.7);
-	//debugWire->AddDebugSphereByType(bodySphere);
 	std::list<KdCollider::CollisionResult> retBodyList;
+	//debugWire->AddDebugSphereByType(bodySphere);
 
 	float overlap = 0;
 	bool isHit = false;
 	Math::Vector3 hitDir;
+	Vector3 hitPos;
+
 	for (auto& obj : SceneManager::Instance().GetObjList()) {
 		if (obj->GetTag() == GameTag::StageTag) {
 			if (obj->Intersects(bodySphere, &retBodyList)) {
-				for (auto& ret : retBodyList) {
-					if (overlap < ret.m_overlapDistance) {
-						overlap = ret.m_overlapDistance;
-						hitDir = ret.m_hitDir;
-						isHit = true;
-					}
-				}
-
+				Utility::CalOverlap(retBodyList, overlap, isHit, hitPos, hitDir);
+			
 			}
 		}
 		

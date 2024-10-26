@@ -17,117 +17,15 @@ enum GameTag
 	DropTag,
 };
 
-enum KeyFlg
-{
-	LButton = 0x01,
-	RButton = 0x02,
-	ShiftKey = 0x04,
-	CtrlKey = 0x08,
-	EnterKey = 0x10,
-	SpaceKey = 0x20,
-	TabKey = 0x40,
-	MoveKey = 0x80,
-
-	QKey = 0x100,
-	EKey = 0x200,
-	RKey = 0x400,
-	TKey = 0x800,
-	YKey = 0x1000,
-	UKey = 0x2000,
-	IKey = 0x4000,
-	OKey = 0x8000,
-	PKey = 0x10000,
-
-	FKey = 0x20000,
-	GKey = 0x40000,
-	HKey = 0x80000,
-	JKey = 0x100000,
-	KKey = 0x200000,
-	LKey = 0x400000,
-
-	ZKey = 0x800000,
-	XKey = 0x1000000,
-	CKey = 0x2000000,
-	VKey = 0x4000000,
-	BKey = 0x8000000,
-	NKey = 0x10000000,
-	MKey = 0x20000000,
-
-	UpKey = 1111,
-	DownKey = 2222,
-	LeftKey = 0x40000000,  // Now using the highest possible bit for LeftKey
-	RightKey = 0x80000000,  // RightKey can use the next available high bit
 
 
-	//LButton =0,
-	//RButton ,
-	//ShiftKey,
-	//CtrlKey ,
-	//EnterKey,
-	//SpaceKey,
-	//TabKey ,
-	//MoveKey ,
-
-	//QKey ,
-	//EKey ,
-	//RKey ,
-	//TKey ,
-	//YKey ,
-	//UKey ,
-	//IKey ,
-	//OKey ,
-	//PKey ,
-	// 
-	//FKey ,
-	//GKey ,
-	//HKey ,
-	//JKey ,
-	//KKey ,
-	//LKey ,
-	//	 
-	//ZKey ,
-	//XKey ,
-	//CKey ,
-	//VKey ,
-	//BKey ,
-	//NKey ,
-	//MKey ,
-
-	//UpKey ,
-	//DownKey ,
-	//LeftKey, //sometime it is too big
-	//RightKey,
-
-};
-
+//プレイヤー
 enum PlayerType
 {
 	NoPlayer = 0,
 	WarriorPlayer = 1,
 	MagePlayer = 2,
 	HealerPlayer = 3,
-};
-
-enum EnemyType
-{
-	NoEnemy = 0,
-	eWanderer = 1,
-	eFighter = 2,
-	eMage = 3,
-	eHealer = 4,
-	eArcher = 5,
-	eBoss = 6,
-};
-
-// EnemyTypeNames
-const std::map<EnemyType, const char*> EnemyTypeNames = {
-	{NoEnemy, "No Enemy"},
-	{eWanderer, "Wanderer"},
-	{eFighter, "Fighter"},
-	{eMage, "Mage"},
-	{eHealer, "Healer"},
-	{eArcher, "Archer"},
-	{eBoss, "Boss"}
 };
 
 enum PlayerState
@@ -139,7 +37,6 @@ enum PlayerState
 	pDash,
 	pAttack,
 	pDefense,
-	pMagicAtk,
 
 	pBlowAway,
 
@@ -156,13 +53,53 @@ const std::map<PlayerState, const char*> PlayerStateNames = {
 	{pDash, "Dash"},
 	{pAttack, "Attack"},
 	{pDefense, "Defense"},
-	{pMagicAtk, "MagicAtk"},
 
 	{pBlowAway, "BlowAway"},
 
 	{pSkill, "Skill"},
 	{pStrikeKill, "StrikeKill"},
 	{pStun, "Stun"},
+};
+
+enum PlayerSkillType
+{
+	SpinSlash,
+	FlySlash,
+	MagicAtk,
+	HealMagic,
+};
+
+enum pProjectileType
+{
+	NoPProjectileType,
+	FlySlashType,
+	MagicBallType,
+	FireBallType,
+	pRangeCircleType,
+};
+
+
+
+//敵
+enum EnemyType
+{
+	NoEnemy = 0,
+	eWanderer = 1,
+	eFighter = 2,
+	eMage = 3,
+	eHealer = 4,
+	eArcher = 5,
+	eBoss = 6,
+};
+
+const std::map<EnemyType, const char*> EnemyTypeNames = {
+	{NoEnemy, "No Enemy"},
+	{eWanderer, "Wanderer"},
+	{eFighter, "Fighter"},
+	{eMage, "Mage"},
+	{eHealer, "Healer"},
+	{eArcher, "Archer"},
+	{eBoss, "Boss"}
 };
 
 enum EnemyState
@@ -227,35 +164,29 @@ const std::map<EnemyState, const char*> EnemyStateNames = {
 	{eStrikeKill, "Strike Kill"},
 };
 
-enum MapType
+enum eProjectileType
 {
-	NoMapType,
-	WallType,
-	CorridorType,
-	GoalType,
-	LandType,
-	ExpCrystalType,
-	DoorType,
-	ChestType,
-	MimicType,
-	BottleType,
-	TrapType,
-	NPCType,
-	EnemyPointType,
+	NoProjectileType,
+	ArrowType,
+	MagicType,
+	MagicRangeType,
+	SlashWaveType,
 };
 
-enum eWeaponType
+
+//アイテム
+enum ItemRarity
 {
-	MagicWeaponType = 0,
-	ArrowWeaponType = 1,
+	Normal = 0,
+	Rare = 1,
+	Legendary = 2,
 };
 
-enum PlayerSkillType
-{
-	SpinSlash,
-	FlySlash,
-	MagicAtk,
-	HealMagic,
+enum InventoryViewMode {
+	FullInventory = 0,
+	PotionInventory,
+	WeaponInventory,
+	ArmorInventory
 };
 
 enum ItemType
@@ -274,45 +205,26 @@ enum PotionType
 	AtkPotionType = 3,
 };
 
-enum ItemRarity
-{
-	Normal = 0,
-	Rare = 1,
-	Legendary = 2,
-};
 
-enum InventoryViewMode {
-	FullInventory = 0,
-	PotionInventory,
-	WeaponInventory,
-	ArmorInventory
-};
 
-enum pWeapnType
-{
-	NoWeaponType,
-	SwordType,
-	DoubleSwordType,
-	MagicstickType,
-	BowType,
-};
 
-enum eProjectileType
-{
-	NoProjectileType,
-	ArrowType,
-	MagicType,
-	MagicRangeType,
-	SlashWaveType,
-};
 
-enum pProjectileType
+//マップ
+enum MapType
 {
-	NoPProjectileType,
-	FlySlashType,
-	MagicBallType,
-	FireBallType,
-	pRangeCircleType,
+	NoMapType,
+	WallType,
+	CorridorType,
+	GoalType,
+	LandType,
+	ExpCrystalType,
+	DoorType,
+	ChestType,
+	MimicType,
+	BottleType,
+	TrapType,
+	NPCType,
+	EnemyPointType,
 };
 
 struct PathNode {
@@ -328,4 +240,48 @@ enum MojiType
 {
 	DmgMoji,
 	MessageMoji,
+};
+
+enum KeyFlg
+{
+	LButton = 0x01,
+	RButton = 0x02,
+	ShiftKey = 0x04,
+	CtrlKey = 0x08,
+	EnterKey = 0x10,
+	SpaceKey = 0x20,
+	TabKey = 0x40,
+	MoveKey = 0x80,
+
+	QKey = 0x100,
+	EKey = 0x200,
+	RKey = 0x400,
+	TKey = 0x800,
+	YKey = 0x1000,
+	UKey = 0x2000,
+	IKey = 0x4000,
+	OKey = 0x8000,
+	PKey = 0x10000,
+
+	FKey = 0x20000,
+	GKey = 0x40000,
+	HKey = 0x80000,
+	JKey = 0x100000,
+	KKey = 0x200000,
+	LKey = 0x400000,
+
+	ZKey = 0x800000,
+	XKey = 0x1000000,
+	CKey = 0x2000000,
+	VKey = 0x4000000,
+	BKey = 0x8000000,
+	NKey = 0x10000000,
+	MKey = 0x20000000,
+
+	UpKey = 1111,
+	DownKey = 2222,
+	AKey = 0x40000000,
+	DKey = 0x80000000,
+
+
 };

@@ -31,10 +31,9 @@ void EnemyLoader::LoadBattleEnemy()
 
 		if (GameManager::Instance().GetFloorNum() != 0) {
 			Vector3 fighterPositions[5] = {
-			enemySpawnPos + Vector3(-8, 0, 3),  // Leftmost fighter
-			enemySpawnPos + Vector3(8, 0, 3),   // Rightmost fighter
-
-			enemySpawnPos + Vector3(0, 0, 9)     // Center fighter
+			enemySpawnPos + Vector3(-8, 0, 3),  // Leftmost
+			enemySpawnPos + Vector3(8, 0, 3),   // Rightmost
+			enemySpawnPos + Vector3(0, 0, 9)     // Center
 			};
 
 			Vector3 magePositions[2] = {
@@ -85,22 +84,7 @@ void EnemyLoader::LoadBattleEnemy()
 
 }
 
-void EnemyLoader::LoadBossEnemy()
-{
-	if (GameManager::Instance().GetCanLoadBoss()) {
 
-		GameManager::Instance().SetCanLoadBoss(false);
-		GameManager::Instance().SetBattleEnemyNum(1);
-
-		shared_ptr<BattleEnemy> boss = make_shared<BattleEnemy>();
-		boss->SetType(EnemyType::eBoss);
-		boss->SetPlayer(wpPlayer.lock());
-		boss->SetCamera(wpCamera.lock());
-		boss->Init();
-		boss->SetPosition(enemySpawnPos + Vector3(0, 0, 9));
-		SceneManager::Instance().AddObject(boss);
-	}
-}
 
 void EnemyLoader::CallImgui()
 {

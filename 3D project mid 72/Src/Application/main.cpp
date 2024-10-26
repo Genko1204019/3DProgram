@@ -466,7 +466,7 @@ void Application::ImGuiProcess()
 
 
 
-	if (GameManager::Instance().isImgui) {
+	if (GameManager::Instance().GetIsImgui()) {
 		//デバッグウィンドウ
 		if (ImGui::Begin("Debug Window"))
 		{

@@ -6,6 +6,7 @@
 // 
 // ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### ##### #####
 
+
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
 // 初期化
 // ・DirectXAudioEngineの初期化 
@@ -112,6 +113,11 @@ std::shared_ptr<KdSoundInstance3D> KdAudioManager::Play3D(std::string_view rName
 	AddPlayList(instance);
 
 	return instance;
+}
+
+std::shared_ptr<KdSoundInstance> KdAudioManager::Play(KdSoundType soundType)
+{
+	return std::shared_ptr<KdSoundInstance>();
 }
 
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////

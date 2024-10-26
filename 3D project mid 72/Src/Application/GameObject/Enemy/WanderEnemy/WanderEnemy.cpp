@@ -17,10 +17,10 @@ void WanderEnemy::Init()
 	PatrolTransition();
 
 	enemyIconTex = make_shared<KdTexture>();
-	enemyIconTex->Load("Asset/Textures/enemyIcon.png");
+	enemyIconTex->Load("Asset/Textures/Minimap/enemyIcon.png");
 
 	enemyIconAtkTex = make_shared<KdTexture>();
-	enemyIconAtkTex->Load("Asset/Textures/enemyIconAtk.png");
+	enemyIconAtkTex->Load("Asset/Textures/Minimap/enemyIconAtk.png");
 
 
 }
@@ -29,14 +29,14 @@ void WanderEnemy::Update()
 {
 	EnemyBase::Update();
 
-	WanderCounterManager();
+	UpdateWanderCounter();
+	UpdateEmmit();
+	UpdatePatrolPoint();
+
 	WeaponInfo();
 
 
-	returnPoint = PathManager::Instance().FindPointInMap(patrolPt[1].x, patrolPt[1
-	].z); //error crash
 
-	UpdateEmmit();
 
 
 }
@@ -69,7 +69,7 @@ void WanderEnemy::DrawMini()
 	miniMapPos2D.y = scaleFactor * pos.z + yOffset;
 
 	Matrix sMat = Matrix::CreateScale(1, 1, 1);
-	Matrix tmat = Matrix::CreateTranslation(miniMapPos2D.x - GameManager::Instance().scrollX, miniMapPos2D.y - GameManager::Instance().scrollY, 0);
+	Matrix tmat = Matrix::CreateTranslation(miniMapPos2D.x - GameManager::Instance().GetPlayerScrollX(), miniMapPos2D.y - GameManager::Instance().GetPlayerScrollY(), 0);
 	Matrix fMat = sMat * tmat;
 	KdShaderManager::Instance().m_spriteShader.SetMatrix(fMat);	
 
@@ -98,7 +98,7 @@ void WanderEnemy::WeaponInfo()
 	}
 }
 
-void WanderEnemy::WanderCounterManager()
+void WanderEnemy::UpdateWanderCounter()
 {
 	canCheckFacingCnt--;
 	followCD -= 1 * gameSpd;
@@ -117,34 +117,33 @@ void WanderEnemy::UpdateEmmit()
 
 }
 
+void WanderEnemy::UpdatePatrolPoint()
+{
+	returnPoint = PathManager::Instance().FindPointInMap(patrolPt[1].x, patrolPt[1].z);
+}
+
 
 
 void WanderEnemy::DmgCollision()
 {
 
-	KdCollider::SphereInfo bodySphere;
-	SetCollider(bodySphere, pos + Vector3(0, 1.28, 0), 1.21, KdCollider::TypeBump | KdCollider::TypeDamage);
+	//KdCollider::SphereInfo bodySphere;
+	KdCollider::SphereInfo bodySphere(KdCollider::TypeBump | KdCollider::TypeDamage, pos + Vector3(0, 1.28, 0), 1.21);
 	std::list<KdCollider::CollisionResult> retHitList;
+	float overlap = 0;
+	Vector3 hitPos;
+	Vector3 hitDir;
+	bool isHit = true;
 
 	for (auto& obj : SceneManager::Instance().GetObjList()) {
 		if (obj->GetTag() == GameTag::PlayerWeaponTag || obj->GetTag() == GameTag::PlayerProjectileTag) {
-			if (obj->Intersects(bodySphere, &retHitList)) {
-				float maxOverlap = 0;
-				Math::Vector3 hitPos;
-				bool isHit = true;
-
-				for (auto& ret : retHitList) {
-					if (maxOverlap < ret.m_overlapDistance) {
-						maxOverlap = ret.m_overlapDistance;
-						hitPos = ret.m_hitPos;
-						isHit = true;
-					}
-				}
-
+			if (obj->Intersects(bodySphere, &retHitList)) {		
+				Utility::CalOverlap(retHitList, overlap, isHit, hitPos, hitDir);
+			
 				if (isHit) {
 					auto player = wpPlayer.lock(); //can't cast obj to player class as it's weapon but not player
 					if (player->ReadyForAtk() && mutekiCnt < 0) {
-						player->OnGiveDmg();
+						player->UpdateHitFrame();
 						OnGetDmg();
 
 					}
@@ -288,8 +287,7 @@ void WanderEnemy::DizzyTransition()
 	//SetAnime("Hit_B", false);
 	isDizzy = true;
 
-	dizzyeffId = KdEffekseerManager::GetInstance().m_nextUniqueId;
-	KdEffekseerManager::GetInstance().Play("pipofm-healthring02.efkefc", { pos + Vector3(0,3,0) }, 1.4, 1.4, false);
+	KdEffekseerManager::GetInstance().PlayById(dizzyeffId,"pipofm-healthring02.efkefc", { pos + Vector3(0,3,0) }, 1.4, 1.4, false);
 	KdAudioManager::Instance().PlayDizzySE();
 }
 
@@ -308,7 +306,6 @@ void WanderEnemy::WanderDead()
 		//objCollider->SetEnable(KdCollider::TypeDamage,false);
 		
 		
-		
 	}
 
 	if (eAnime->IsAnimationEnd() && !timeToDrop) {
@@ -325,6 +322,7 @@ void WanderEnemy::WanderDeadTransition()
 	nowState = EnemyState::eWanderDead;
 	stateMachine.ChangeState(this, new eWanderDeadState());
 	//SetAnime("Idle_B", false);
+	hp = 0;
 
 }
 

@@ -1,4 +1,6 @@
-﻿#include"InventoryManager.h"
+﻿//InventoryManager.cpp file:
+
+#include"InventoryManager.h"
 #include"Application/GameObject/Item/Item.h"
 #include"Application/Scene/SceneManager.h"
 #include"Application/Manager/InputManager.h"
@@ -25,14 +27,13 @@ void InventoryManager::Update()
 
 	if (!GameManager::Instance().GetIsInventoryOpen()) return;
 
-	DoSpawnItem();
 
 	InventoryMenu();
 
 
-	if (InputManager::Instance().IsKeyJustPressed(KeyFlg::EnterKey)) {
-		UseSelectedItem(filteredInventory);
-	}
+	
+	UseSelectedItem(filteredInventory);
+	
 
 	HandleItemStatus();
 
@@ -169,31 +170,16 @@ void InventoryManager::RandomSpawnItem(Vector3 _spawnPos)
 
 }
 
-void InventoryManager::DoSpawnItem()
-{
-
-	//spawnCd--;
-
-	//if (InputManager::Instance().IsKeyJustPressed(GKey)) {
-	//	itemSpawnList.clear();
-	//	LoadItemsFromJson("Data/itemList JP.json");
-
-	//	//RandomSpawnItem();
-	//}
-
-}
 
 void InventoryManager::DoRandomSpawnItem(Vector3 _spawnPos)
 {
 	itemSpawnList.clear();
 	LoadItemsFromJson("Data/itemList JP.json");
-
 	RandomSpawnItem(_spawnPos);
 }
 
 void InventoryManager::HandleItemStatus()
 {
-	//loop through all potion item , if quantity is 0 remove from inventory
 	for (auto it = inventory.begin(); it != inventory.end();)
 	{
 		if ((*it)->quantity <= 0)
@@ -282,15 +268,12 @@ void InventoryManager::ShowInventory()
 
 		}
 
-
-
 		float space = 77;
 		KdShaderManager::Instance().m_spriteShader.DrawString(invenMenuPos.x, invenMenuPos.y, "全部", { 1,1,1,1 }, 0.49);
 		KdShaderManager::Instance().m_spriteShader.DrawString(invenMenuPos.x + space, invenMenuPos.y, "武器", { 1,1,1,1 }, 0.49);
 		KdShaderManager::Instance().m_spriteShader.DrawString(invenMenuPos.x + space * 2, invenMenuPos.y, "防具", { 1,1,1,1 }, 0.49);
 		KdShaderManager::Instance().m_spriteShader.DrawString(invenMenuPos.x + space * 3, invenMenuPos.y, "消耗品", { 1,1,1,1 }, 0.49);
 		
-
 	}
 
 
@@ -304,7 +287,6 @@ void InventoryManager::ScrollInventory(int direction, const std::vector<std::sha
 
 	if (direction == -1) {
 		if (selectedItemIndex > 0)	  selectedItemIndex += direction;
-
 	}
 	else if (direction == 1) {
 		if (selectedItemIndex < filteredInventory.size() - 1)selectedItemIndex += direction;
@@ -317,79 +299,79 @@ void InventoryManager::UseSelectedItem(std::vector<std::shared_ptr<Item>>& filte
 {
 	if (filteredInventory.empty()) return;
 
-	auto selectedItem = filteredInventory[selectedItemIndex];
-	auto player = wpPlayer.lock();
-	if (!player) return; 
+	if (InputManager::Instance().IsKeyJustPressed(KeyFlg::EnterKey)) {
+		auto selectedItem = filteredInventory[selectedItemIndex];
+		auto player = wpPlayer.lock();
+		if (!player) return;
 
-	if (selectedItem->canConsume)
-	{
-		KdAudioManager::Instance().PlayUseItemSE();
-		player->UsePotion(selectedItem->potionId, *selectedItem);
-		/*player->Sethp(player->Gethp() + selectedItem->healAmount);
-		if (player->Gethp() > player->GetmaxHp()) player->Sethp(player->GetmaxHp());*/
-
-		selectedItem->quantity--;
-
-		if (selectedItem->quantity <= 0)
+		if (selectedItem->canConsume)
 		{
-			auto it = std::find(inventory.begin(), inventory.end(), selectedItem);
-			if (it != inventory.end())
+			KdAudioManager::Instance().PlayUseItemSE();
+			player->UsePotion(selectedItem->potionId, *selectedItem);
+			selectedItem->quantity--;
+
+			if (selectedItem->quantity <= 0)
 			{
-				inventory.erase(it);
-			}
-
-			if (selectedItemIndex >= filteredInventory.size())
-			{
-				selectedItemIndex = filteredInventory.size() - 1;
-			}
-		}
-	}
-
-	else if (selectedItem->canEquip)
-	{
-		if (!selectedItem->isEquip)
-		{
-			KdAudioManager::Instance().PlayEquipItemSE();
-
-			if (selectedItem->GetType() == ItemType::WeaponItem) {
 				auto it = std::find(inventory.begin(), inventory.end(), selectedItem);
 				if (it != inventory.end())
 				{
-					//set all weapon to not equip
-					for (auto& item : inventory)
-					{
-						if (item->GetType() == ItemType::WeaponItem)
-						{
-							item->isEquip = false;
-						}
-					}
-					(*it)->isEquip = true;
-					player->ChangeWeapon(selectedItem->weaponId, selectedItem->skillSet, selectedItem->modelPath, selectedItem->atkPow);
+					inventory.erase(it);
 				}
-			}
-			else if (selectedItem->GetType() == ItemType::ArmorItem) {
-				auto it = std::find(inventory.begin(), inventory.end(), selectedItem);
-				if (it != inventory.end())
+
+				if (selectedItemIndex >= filteredInventory.size())
 				{
-					//set all weapon to not equip
-					for (auto& item : inventory)
-					{
-						if (item->GetType() == ItemType::ArmorItem)
-						{
-							item->isEquip = false;
-						}
-					}
-					(*it)->isEquip = true;
-					player->ChangeArmor(selectedItem->armorId, selectedItem->modelPath, selectedItem->defUp);
+					selectedItemIndex = filteredInventory.size() - 1;
 				}
 			}
-			
 		}
-		else {
-			KdAudioManager::Instance().PlayUiDenieSE();
+
+		else if (selectedItem->canEquip)
+		{
+			if (!selectedItem->isEquip)
+			{
+				KdAudioManager::Instance().PlayEquipItemSE();
+
+				if (selectedItem->GetType() == ItemType::WeaponItem) {
+					auto it = std::find(inventory.begin(), inventory.end(), selectedItem);
+					if (it != inventory.end())
+					{
+						//set all weapon to not equip
+						for (auto& item : inventory)
+						{
+							if (item->GetType() == ItemType::WeaponItem)
+							{
+								item->isEquip = false;
+							}
+						}
+						(*it)->isEquip = true;
+						player->ChangeWeapon(selectedItem->weaponId, selectedItem->skillSet, selectedItem->modelPath, selectedItem->atkPow);
+					}
+				}
+				else if (selectedItem->GetType() == ItemType::ArmorItem) {
+					auto it = std::find(inventory.begin(), inventory.end(), selectedItem);
+					if (it != inventory.end())
+					{
+						//set all weapon to not equip
+						for (auto& item : inventory)
+						{
+							if (item->GetType() == ItemType::ArmorItem)
+							{
+								item->isEquip = false;
+							}
+						}
+						(*it)->isEquip = true;
+						player->ChangeArmor(selectedItem->armorId, selectedItem->modelPath, selectedItem->defUp);
+					}
+				}
+
+			}
+			else {
+				KdAudioManager::Instance().PlayUiDenieSE();
+			}
+
 		}
-		
 	}
+	
 
 }
 
@@ -445,27 +427,21 @@ void InventoryManager::InventoryMenu()
 		KdAudioManager::Instance().PlayUiHoverSE();
 	}
 
-
-
-
 }
 
 void InventoryManager::OpenInventory()
 {
 	InventoryViewMode previousViewMode = currentViewMode; 
 
-	//currentViewMode = FullInventory;  
-
-	if (InputManager::Instance().IsKeyJustPressed(KeyFlg::RightKey)) {
+	if (InputManager::Instance().IsKeyJustPressed(KeyFlg::DKey)) {
 		if (currentViewMode == FullInventory) currentViewMode = WeaponInventory;
 		else if (currentViewMode == PotionInventory) currentViewMode = FullInventory;
 		else if (currentViewMode == WeaponInventory) currentViewMode = ArmorInventory;
 		else if (currentViewMode == ArmorInventory) currentViewMode = PotionInventory;
 		KdAudioManager::Instance().PlayUiHoverSE();
-
 	}
 
-	if (InputManager::Instance().IsKeyJustPressed(KeyFlg::LeftKey)) {
+	if (InputManager::Instance().IsKeyJustPressed(KeyFlg::AKey)) {
 		if (currentViewMode == FullInventory) currentViewMode = PotionInventory;
 		else if (currentViewMode == PotionInventory) currentViewMode = ArmorInventory;
 		else if (currentViewMode == WeaponInventory) currentViewMode = FullInventory;
@@ -508,10 +484,7 @@ void InventoryManager::GetAllItemFromitemSpawnListAtBegin()
 
 	for (auto& item : itemSpawnList)
 	{
-		// Initialize the item if necessary
 		item->Init();
-
-		// Add the item to the inventory
 		AddItem(item);
 	}
 

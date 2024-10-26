@@ -27,6 +27,7 @@ public:
 
 	// Effekseerエフェクト再生
 	std::weak_ptr<KdEffekseerObject> Play(const std::string& effName, const DirectX::SimpleMath::Vector3& pos, const float size = 1, const float speed = 1, const bool isLoop = true);
+	std::weak_ptr<KdEffekseerObject> PlayById(int& _effId, const std::string& effName, const DirectX::SimpleMath::Vector3& pos, const float size = 1, const float speed = 1, const bool isLoop = true);
 
 	void StopAllEffect();
 	void StopEffect(const std::string& name);
@@ -45,7 +46,8 @@ public:
 	void SetRotation(const int handle, const Math::Vector3& axis, const float angle);
 	void SetWorldMatrix(const int handle, const Math::Matrix& mWorld);
 
-	void SetPosById(int _effectId, Math::Vector3& _pos);
+	void SetPosByIds(int _effectId, Math::Vector3& _pos);
+	void SetPosById(int _effectId, Math::Vector3 _pos);
 	void SetRotationById(int _effectId, Math::Vector3& _axis, float _angle);
 	void SetWorldMatrixById(int _effectId, Math::Matrix& _mWorld);
 

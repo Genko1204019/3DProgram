@@ -43,15 +43,14 @@ public:
 
 	void CallImgui()		override;
 
-	void UpdateRotateByMouse();
+	void UpdateCameraRotation();
+	void EnemyLockOn();
+	void RotateWithMouse();
 
 	void CounterManager();
 
-	void EnterDialogMode();
-	void EndDialogMode();
-
-	void EnemyLockOn();
-
+	void CameraEffect();
+	
 	void PlayerInfo();
 	void EnemyInfo();
 	void UpdateMatrix();
@@ -61,8 +60,6 @@ public:
 
 	void StartBattleCutScene();
 
-	void StartDialogCutScene();
-
 	void StartWinCutScene();
 
 	void PlanCameraMove(Vector3 _startPos, Vector3 _endPos, Vector3 _startRot, Vector3 _endRot, float _duration);
@@ -71,21 +68,17 @@ public:
 	void CameraTwist();
 	void StartCameraTwist();
 
-	void ApplyBlurEffect();
 
 	void StartStandStill();
 	void ReturnToFollow();
 
 	void OpenInventoryMode();
-	void InventoryToFollowMode();
 
-	KdTexture tex; 
+	void DebugKey();
 
 	//weak_ptr enemy
 	weak_ptr<BattleEnemy> wpEnemy;
 	weak_ptr<Player> wpPlayer;
-
-	//Vector3 rot = { 0,0,0 };
 
 	//Matrix 
 	Matrix scaleMat = {};
@@ -102,7 +95,6 @@ public:
 	Matrix enemyTransMat = {};
 
 	Vector3 camToEnemy = {};
-	Vector3 camToEnemyXZ = {};
 
 	bool isLockOn = false;
 
@@ -113,8 +105,6 @@ public:
 	float focusBackRange = 28;
 
 	Vector3 posOffset = { 0, 4, -11.4 };
-	//Vector3 posOffset = { 0, 4, -14 };
-
 	Vector3 rotOffset = { 0, 0, 0 };
 
 	Vector3 startPos = {};
@@ -136,27 +126,21 @@ public:
 	Vector3 originalPosOffset = { 0, 4, -10 };
 	Vector3 originalRotOffset = { 0, 0, 0 };
 
-
 	float moveElapsed = 0;
-	float moveDuration = 2.0f;						//カメラの移動総合時間
+	float moveDuration = 2.0f;						
 
-	int cameraMode = CamMode::FollowMode;
+	int nowState = CamMode::FollowMode;
 	float cutSceneCnt = 0;
 	int cutSceneProcess = 0;
 
-
+	bool isCamMoving = false;
 	Vector3 targetPos = {}; //for camMove
 	Vector3 targetRot = {};
 
-	bool isCamMoving = false;
-
-	float time = 0;
-
-
 	float twistAngle = 0;
-	float twistDuration = 1.5f; // Duration of the twist in seconds
-	float twistElapsed = 0.0f;  // Time elapsed since the twist started
-	bool isTwisting = false;    // Flag to check if twisting is active
+	float twistDuration = 1.5f; 
+	float twistElapsed = 0.0f;  
+	bool isTwisting = false;    
 	float camFov = 60;
 
 	Vector3 standStillPos = { 6,-7,14 };
@@ -164,13 +148,11 @@ public:
 	float standStillCnt = 0;
 	bool isStandStill = false;
 
-	Vector3 dialogPos = { 0,0,0 };
-
 	float camBrightness = 1.0f;
 
 	Vector3 observeEnemyPos = { 7,-11,14 };
-
 	Vector3 observePlayerPos = { 7, -11, 14 };
+
 
 
 private:

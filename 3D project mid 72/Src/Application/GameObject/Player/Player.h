@@ -20,15 +20,6 @@ using namespace DirectX::SimpleMath;
 
 using json = nlohmann::json;
 
-struct AfterImage {
-	Vector3 position;
-	Matrix rotation;
-	float opacity;
-	shared_ptr<KdAnimator> afterAnimator = nullptr;
-	shared_ptr<KdModelWork> afterModel = nullptr;
-	float aftetAniSpd = 1;
-};
-
 class Player : public KdGameObject
 {
 public:
@@ -154,7 +145,7 @@ void SetmaxAnger(float _maxAnger) { maxAnger = _maxAnger; }
 	void SetArmor(const shared_ptr<PlayerArmor>& armor) { wpArmor = armor; }
 	void SetShield(const shared_ptr<PlayerShield>& shield) { wpShield = shield; }
 
-	bool isWithinAtkFrame();
+	bool IsAtkEnable();
 	bool ReadyForAtk();
 	bool isPressingMoveKey();
 
@@ -168,7 +159,7 @@ void SetmaxAnger(float _maxAnger) { maxAnger = _maxAnger; }
 	void DrawMoji() override;
 
 	void DrawMini() override;
-	void UpdateMiniMapPos();
+	void UpdateMiniMap();
 
 	void DrawRenderTarget() override;
 
@@ -184,7 +175,6 @@ void SetmaxAnger(float _maxAnger) { maxAnger = _maxAnger; }
 
 	//SetAnimation
 	void SetAnime(string _aniName, bool _isLoop);
-	void SetAnime(string _aniName, string _aniName2, bool _isLoop);
 	void ResetAnime();
 	void ResetAnimeName();
 
@@ -193,6 +183,10 @@ void SetmaxAnger(float _maxAnger) { maxAnger = _maxAnger; }
 	void UpdateAnimation();
 	void UpdateRotation();
 	void UpdateGravity();
+	void UpdateStatus();
+	void UpdateCounter();
+	void UpdateStateMachine();
+	void UpdateEffect();
 
 	//TargetInfo
 	void EnemyInfo();
@@ -200,25 +194,24 @@ void SetmaxAnger(float _maxAnger) { maxAnger = _maxAnger; }
 	void GameInfo();
 	void WeaponInfo();
 
-	//Collision & Debug Wire
-	void SetCollider(KdCollider::SphereInfo& _sphereObj,Vector3 _sphereCenter, float _sphereRadius, UINT _hitType);
-	void SetCollider(KdCollider::RayInfo& _rayObj, Vector3 _rayPos, Vector3 _rayPosAdd, Vector3 _rayDir, float _rayRange, UINT _hitType);
-
-	void SetDebugWire(KdCollider::SphereInfo& _sphereObj, Color _sphereColor = { 1,0,0,1 });
-	void SetDebugWire(KdCollider::RayInfo& _rayObj, Color _rayColor = { 1,1,1,1 });
 
 	void GroundCollision();
+	void HitGroundObj(Vector3 _hitPos);
+	void HitTrapObj(const std::shared_ptr<KdGameObject>& _obj);
+
 	void BodyCollision();
+	void HitMapObj(const std::shared_ptr<KdGameObject>& _obj);
+	void HitItemObj(const std::shared_ptr<KdGameObject>& _obj);
+
 	void DmgCollision();
-	void ItemCollision();
+	void HitEnemy(const std::shared_ptr<KdGameObject>& _obj);
+	void HitEnemyWeapon(const std::shared_ptr<KdGameObject>& _obj);
+	void HitEnemyProjectile(const std::shared_ptr<KdGameObject>& _obj);
 
 	string swordName = "Sword";
 
-	//Counter
-	void CounterManager();
-
-	void ManageMP();
-	void ManageFog();
+	
+	
 
 	//Dash
 	void PlayerDash();
@@ -234,24 +227,15 @@ void SetmaxAnger(float _maxAnger) { maxAnger = _maxAnger; }
 	
 	void PlayerHitStop();
 
-	void EffectManager();
-	void CreateEffect(int& _effectId, string _effecName, Vector3 _effPos, float _effScale, float _effSpd, bool _isLoop);
-	void SetEffectPos(int _effecId, Vector3 _pos);
-	int effCnt = 0;
 
 	//PLayer Weapon
 	void EquipAllGears();
 	void ChangeArmor(int _armorId, string _modelPath, float _wpDef);
 	void ChangeWeapon(int _wpId, int _skillId, string _modelPath, float _wpDmg);
 
-	void PickUpItem();
-	void UseItem();
 	void UsePotion(int _potionId, Item& _item);
 
-	void PlayerHpBarBuffer();
-
-	//Action (State Machine) & StateTransition
-	void StateMachineManager();
+	
 	
 	void PlayerIdle();
 	void IdleTransition();
@@ -272,7 +256,7 @@ void SetmaxAnger(float _maxAnger) { maxAnger = _maxAnger; }
 	void AtkTransition();
 	void EnterAtk();
 	void ExitAtk();
-	void SetAtkInfo(float _aniSpd, float _atkStartframe, float _atkEndFrame, float _atkDmg, float _atkMoveDist, float _pushEnemyPow);
+	void SetAtkInfo(float _aniSpd, float _atkStartframe, float _atkEndFrame, float _atkMoveDist, float _pushEnemyPow);
 	void SetAtkAngle();
 	void AtkMove();
 	void AtkManager();
@@ -282,29 +266,20 @@ void SetmaxAnger(float _maxAnger) { maxAnger = _maxAnger; }
 
 	void ShotMagicBall();
 
-	void PlayerMagicAtk();
-	void PlayerMagicAtkTransition();
-	void EnterMagicAtk();
-	void ExitMagicAtk();
-
 	void PlayerStrikeKill();
 	void StrikeKillTransition();
-
 
 	void PlayerStun();
 	void StunTransition();
 	void EnterStun();
-
-	void PlayerShot();
 
 	void PlayerBlowAway();
 	void BlowAwayTransition(Vector3 _blowDir, float _blowPow, float _gravity, bool _canRotate = false);
 	void EnterBlowAway();
 
 
-	void OnGiveDmg();
+	void UpdateHitFrame();
 
-	void TrailPoly();
 
 
 
@@ -317,8 +292,6 @@ void SetmaxAnger(float _maxAnger) { maxAnger = _maxAnger; }
 	void FlySlashSkill();
 	void MagicAtkSkill();
 
-	void DashEffect();
-
 	void OnHit() override;
 	
 
@@ -327,23 +300,12 @@ void SetmaxAnger(float _maxAnger) { maxAnger = _maxAnger; }
 
 	void CallImgui() override;
 
-	static const int afterNum = 7;
-	AfterImage playerAfter[afterNum];
-
-	float afterCnt = 0;
-
-
 
 	float scrollX = 0;
 	float scrollY = 0;
 
 	float playerMiniPosX = 0;
 	float playerMiniPosY = 0;
-
-	/*float scrollXMax = 200;
-	float scrollXMin = -200;
-	float scrollYMax = 200;
-	float scrollYMin = -200;*/
 
 	float scrollXMax = 270;
 	float scrollXMin = 94;
@@ -358,19 +320,6 @@ private:
 	KdTexture IconTex;
 	Math::Rectangle iconRect = { 0,0,32,32 };
 
-	shared_ptr<KdSquarePolygon> dissolvePoly;
-
-	shared_ptr<KdModelWork> test = nullptr;
-
-
-	shared_ptr<KdModelWork>  testModel = nullptr;
-	shared_ptr<KdAnimator> testAnime;
-
-	KdTrailPolygon tPoly;
-
-	shared_ptr<KdSquarePolygon> renderPoly;
-
-
 	//Model
 	shared_ptr<KdModelWork>  bodyModel = nullptr;
 
@@ -381,39 +330,28 @@ private:
 	//Anime
 	shared_ptr<KdAnimator> bodyAnime;
 
-	//Poly
-	shared_ptr<KdSquarePolygon> poly;
-
 	string idleAni = "Idle";
 	string idleAniTwoHand = "2H_Melee_Idle";
-
 	string stunAni = "Hit_B";
-
 	string spawnAni = "Spawn_A";
 	string deathAni = "Death_A";
-
 	string atkAni1 = "2H_Melee_Attack_Chop";
 	string atkAni2 = "2H_Melee_Attack_Stab";
 	//string atkAni3 = "1H_Melee_Attack_Slice_Diagonal";
 	string atkAni3 = "2H_Melee_Attack_Chop";
 	string atkAni4 = "2H_Melee_Attack_Spin";
-
 	string dashForAni = "Dodge_Forward";
 	string dashBackAni = "Dodge_Backward";
 	string dashLeftAni = "Dodge_Left";
 	string dashRightAni = "Dodge_Right";
-
 	string walkAni = "Running_A";
 	string walkBackAni = "Walking_Backwards";
 	string walkLeftAni = "Running_Strafe_Left";
 	string walkRightAni = "Running_Strafe_Right";
-
 	string defenseAni = "Blocking";
 	string getHitAni = "Hit_B";
-
 	string skillAni = "2H_Melee_Attack_Spinning";
 	string skillPrepareAni = "2H_Melee_Attack_Spin";
-
 	string cheerAni = "Spellcast_Raise";
 
 
@@ -426,12 +364,9 @@ private:
 	//StateMachine
 	StateMachine stateMachine;
 
-
 	//Matrix
 	Matrix scaleMat = {}, rotMat = {}, transMat = {};
 	Matrix wpWorldMat = {};
-	Matrix swordMat = {};
-
 	Matrix inventoryPlayerMat = {};
 
 	//Status
@@ -452,7 +387,6 @@ private:
 	Matrix nowRot = {};
 	Vector3 nowVec = {};
 	Vector3 toVec = {};
-
 
 	//Animation
 	float aniSpd = 1.f;
@@ -490,14 +424,9 @@ private:
 	float atkFrame = 0;
 	float atkReadyFrame = 30; //14
 	float atkEndFrame = 56; // 20
-	float atkReadyAdjustFrame = 0;
-	float atkEndAdjustFrame = 0;
+	
 	float pushEnemyPow = 1.4;
 	float atkDmg = 10;
-	int wpComboSet = 1;
-
-	int atkCombo = 0;
-
 
 	float atkDmgAccumulator = 0;
 	float atkDmgShowcase = 0;
@@ -508,8 +437,6 @@ private:
 	//defense
 	bool isDefensing = false;
 	float defenseDuration = 0;
-
-	
 
 	//LockOn
 	bool isLockOn = false;
@@ -525,11 +452,6 @@ private:
 	Vector3 camPos = {};
 	Matrix camRotMat = {};
 
-	//Collider Info
-	Vector3 swordOffset = {};
-
-	//Game Info
-
 	//stun & hitstop
 	Vector3 getHitPos = {};
 	Vector3 getHitDir = {};
@@ -542,40 +464,12 @@ private:
 	int nowState = PlayerState::pIdle;
 	float stateCnt = 0;
 
-	//ChangeWeapon
-	float changeWeaponCnt = 0;
-	int weaponId = 1;
-
-
-	//ChangeWeapon
-	bool isChangeWeapon = false;
-	int currentWeapon = 0;
-	int weaponSlotA = 0;
-	int weaponSlotB = 0;
-	int weaponDmg = 0;
-	 
-	string currentAnime = "";
-
-	//Bit-Masking
-	int m_nowKey = 0;
-	int m_prevKey = 0;
-
-
-	bool isHitEnemy = false;
-
 	//Effect-Related
 	int effectId = 0;
 	int slashEffId = 0;
-
 	bool canSlashEff = false;
 
-	Matrix polyMat = {};
-
-	float polyRot = 90;
-
-	Vector3 swordBoxSize = {11.14 ,11.14 ,11.14 };
-
-
+	
 	//StrikeKill
 	bool isStrikeKill = false;
 	int strikeCombo = 0;
@@ -589,31 +483,9 @@ private:
 
 	string auraEffName = "NA_aura_004.efkefc";
 
-
 	bool hasEquipment = false;
 
-	//LIght & Shader
-	Vector3 lightDir = {-1,-1,-1 };
-	Color lightColor = { 1.0f, 1.0f, 1.0f, 1.0f };
-	Color ambientColor = { 0.21,0.23,0.39, 1.0f };//0,0,1,1 worldStop
 	Color playerColor = { 0.7, 0.7,  0.7,1.0f };
-
-	//height fog
-	float topVal = -2.1; //1 , -2.1
-	float botVal = 0.5;
-	float hfogDist = 49;
-	Color hfogColor = { 0,0,0, 1.0f };
-
-	float dfogDensity = 0.1;
-
-	//point light 
-	Color pointLightColor = { 1,1,1,1 };
-	Vector3 pointLightPos = { 0,0,0 };
-	float pointLightRadiu = 100;
-
-	bool canAStar = false;
-
-	
 
 
 	//Player Skill
@@ -623,8 +495,6 @@ private:
 	float skillPrepareCnt = 0;
 
 	float mutekiCnt = 0;
-
-	//get Hit 
 	
 	//hp buffer
 	float hpBuffer = 0;
@@ -636,10 +506,6 @@ private:
 
 	//for water shader 
 	std::shared_ptr<KdTexture> m_normalTex;
-
-	//circle light 
-	float circleRangeAdd = 0;
-	float circleRangeMax = 7;
 
 	//blowAway
 	Vector3 blowTargetPos = {};

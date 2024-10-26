@@ -29,11 +29,6 @@ public:
 	void GenerateDepthMapFromLight() override;
 
 	void SetCollider(KdCollider::RayInfo& _rayObj, Vector3 _rayPos, Vector3 _rayPosAdd, Vector3 _rayDir, float _rayRange, UINT _hitType);
-	void SetCollider(KdCollider::SphereInfo& _sphereObj, Vector3 _sphereCenter, float _sphereRadius, UINT _hitType);
-	void SetDebugWire(KdCollider::RayInfo& _rayObj, Color _rayColor)
-	{
-		if (GameManager::Instance().GetCanDebugWire())  debugWire->AddDebugLine(_rayObj.m_pos, _rayObj.m_pos + _rayObj.m_dir * _rayObj.m_range, _rayColor);
-	}
 
 	void InitModelInfo();
 	void InitAnimator();
@@ -47,11 +42,12 @@ public:
 	void UpdateHpRotation();
 
 	void GroundCollision();
+	void EnemyCollision();
 	void BodyCollision();
 
 	void CheckFacingPlayer();
 
-	void EnemyCounterManager();
+	void UpdateEnemyCounter();
 	void UpdateStateMachine();
 
 	void EquipWeapon();
@@ -67,40 +63,28 @@ protected:
 	shared_ptr<KdModelWork>  eModel = nullptr;
 	shared_ptr<KdModelWork>  equipModel = nullptr;
 
-	shared_ptr<KdModelWork> testModel = nullptr;
+	shared_ptr<KdAnimator> eAnime;
+	shared_ptr<KdAnimator> equipAnime;
 
 	string eModelName = "Asset/Models/_EnemyObj/SkeletonFighter/SkeletonFighter.gltf";
 	string equipModelName = "Asset/Models/_EnemyObj/Skeleton/SkeWarHelmet.gltf";
 	string wpModelName = "Asset/Models/_EnemyObj/Fighter/FighterWp/SkeWarAxe.gltf";
 
-
-	shared_ptr<KdAnimator> eAnime;
-	shared_ptr<KdAnimator> equipAnime;
-
 	string wanderAni = "Walking_D_Skeletons";
 	string walkAni = "Running_A";
 	string idleAni = "Idle";
 	string stunAni = "Hit_B";
-
 	string spawnAni = "Spawn_Ground_Skeletons";
 	string deathAni = "Death_B";
-
 	string atkAni1 = "2H_Melee_Attack_Spin";
 	string atkAni2 = "1H_Melee_Attack_Chop";
 	string atkAni3 = "2H_Melee_Attack_Spin";
 	string spellAni = "Spellcasting";
-
 	string getHitAni = "Hit_B";
 	string alertAni = "Taunt";
-
 	string backJumpAni = "Taunt";
-
-	//string blowAwayAni = "Sit_Floor_Idle";
-	//string blowAwayAniStand = "Sit_Floor_StandUp";
-
 	string blowAwayAni = "Lie_Idle";
 	string blowAwayAniStand = "Lie_StandUp";
-
 
 	weak_ptr<Player> wpPlayer;
 	weak_ptr<BattleEnemy> wpEnemy;
@@ -108,8 +92,7 @@ protected:
 	weak_ptr<EnemyWeapon> wpWeapon;
 
 	//Matrix
-	Matrix scaleMat = {}, rotMat = {}, rotMatX,transMat = {};
-
+	Matrix scaleMat = {}, rotMat = {}, rotMatX = {}, transMat = {};
 	Vector3 scale = { 1.77,1.77,1.77 };
 	float rotAngle = 0.f;
 	float rotAngleZ = 0.f;
@@ -120,10 +103,6 @@ protected:
 	int storeID = -99;
 	float hp = 100.f;
 	float maxHp = 100.f;
-
-	//Drawing
-	Color eColor = { 1,1,1,1 };
-	float eAlpha = 1.f;
 
 	//Animation
 	float aniSpd = 1.f;

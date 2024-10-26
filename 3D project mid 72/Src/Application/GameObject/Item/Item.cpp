@@ -1,4 +1,6 @@
-﻿#include "Item.h"
+﻿//Item.cpp file:
+
+#include "Item.h"
 #include"Application/Manager/GameManager.h"
 
 
@@ -12,9 +14,6 @@ void Item::Init()
 	objCollider = std::make_unique<KdCollider>();
 	objCollider->RegisterCollisionShape("ItemCollision", model, KdCollider::TypeGround);
 
-	
-
-
 	switch (objType)
 	{
 	case ItemType::PotionItem:
@@ -26,21 +25,19 @@ void Item::Init()
 		break;
 	case ItemType::ArmorItem:
 		canEquip = true;
-
 		break;
 
 	default:
 		break;
 	}
 
-	
 
 }
 
 void Item::Update()
 {
-	//if(objType != ItemType::WeaponItem) rotAngle++;
 	rotAngle++;
+
 	if (objType == ItemType::PotionItem) {
 		Matrix scaleMat = Matrix::CreateScale(0.77, 0.77, 0.77);
 		Matrix transMat = Matrix::CreateTranslation(pos);
@@ -75,6 +72,9 @@ void Item::Update()
 
 void Item::DrawLit()
 {
+	//Color itemColor = { 0.325,0.75,0.52,0.4 };
+	Color itemColor = { 1,1,1,0.7 };
+	KdShaderManager::Instance().m_StandardShader.DrawModel(*model, worldMat, itemColor);
 
 
 }
@@ -86,8 +86,8 @@ void Item::GenerateDepthMapFromLight()
 
 void Item::DrawBright()
 {
-	Color itemColor = { 0.325,0.75,0.52,0.4 };
-	KdShaderManager::Instance().m_StandardShader.DrawModel(*model, worldMat,itemColor);
+	/*Color itemColor = { 0.325,0.75,0.52,0.4 };
+	KdShaderManager::Instance().m_StandardShader.DrawModel(*model, worldMat,itemColor);*/
 
 }
 
@@ -103,16 +103,9 @@ void Item::ItemGetPickUP()
 
 void Item::CallImgui()
 {
-	//imgui begin item
 	ImGui::Begin("Item");
-	//coloredText item
 	ImGui::TextColored(imRed, "Item");
-
-	//show pos
 	ImGui::Text("Pos: %f, %f, %f", pos.x, pos.y, pos.z);
-	//show objType
 	ImGui::Text("ObjType: %d", objType);
-
-	//end imgui
 	ImGui::End();
 }

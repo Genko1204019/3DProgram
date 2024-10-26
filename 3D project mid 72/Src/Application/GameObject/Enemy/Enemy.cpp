@@ -352,9 +352,6 @@ void Enemy::GroundCollision()
 void Enemy::BodyCollision()
 {
 	
-	//E to E collision
-	if(GameManager::Instance().canEnemyCollision){
-
 
 	KdCollider::SphereInfo eSphere;
 	std::list<KdCollider::CollisionResult> eRetList;
@@ -393,7 +390,7 @@ void Enemy::BodyCollision()
 
 	
 
-}
+
 
 
 
@@ -488,7 +485,7 @@ void Enemy::DmgCollision()
 
 					auto player = wpPlayer.lock(); //can't cast obj to player class as it's weapon but not player
 					if (player->ReadyForAtk() && mutekiCnt < 0) {
-						player->OnGiveDmg();
+						player->UpdateHitFrame();
 						OnGetDmg(hitPos);
 						
 					}
@@ -1051,7 +1048,7 @@ void Enemy::WeaponInfo()
 	if (spWeapon) {
 		spWeapon->SetAniSpd(aniSpd);
 		spWeapon->SetMatrix(worldMat);
-		spWeapon->isAtkEnable = isAtkEnable();
+		spWeapon->SetIsAtkEnable(isAtkEnable());
 	}
 
 

@@ -17,20 +17,6 @@ private:
 
 };
 
-class pMagicAtkState : public GameState
-{
-public:
-	pMagicAtkState() {}
-	~pMagicAtkState() {}
-
-	void Enter(KdGameObject* gameObj) override;
-	void Update(KdGameObject* gameObj) override;
-	void Exit(KdGameObject* gameObj) override;
-
-private:
-
-};
-
 class pMoveState : public GameState
 {
 public:

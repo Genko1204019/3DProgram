@@ -82,11 +82,7 @@ public:
 	void ControlInvetoryRelated();
 
 	void ControlMessageBox();
-	void OpenMessageBox(Vector2 _boxPos, string _messageMoji);
 	
-	void ShowBattleStart();
-	void ShowBattleWin();
-
 
 	void DrawUi(UiElement& _ui);
 
@@ -97,17 +93,26 @@ public:
 
 	void CallImgui() override;
 
+	
+	bool showBattleStart = false;
+	bool showBattleWin = false;
 	float bloodAlpha = 0;
 
 
-	bool showBattleStart = false;
-	bool showBattleWin = false;
-
-	Math::Rectangle hpBarRect = { 0,0,190,20 };
-	KdTexture hpBarTex;
-
 
 private:
+
+	const std::array<UiLayer, 7> DrawOrder = {
+	UiLayer::LowBackground,
+	UiLayer::Background,
+	UiLayer::TopBackground,
+	UiLayer::Middle,
+	UiLayer::Font,
+	UiLayer::TopFont,
+	UiLayer::TopMost
+	};
+
+
 
 	KdTexture miniTex;
 
@@ -122,9 +127,6 @@ private:
 
 	bool hasUi = true;
 
-	float testX = 0;
-	float testY = 0;
-
 	float dialogFrameAlpha = 0;
 	bool isDialogOpen = false;
 
@@ -132,13 +134,13 @@ private:
 	bool isOriginSet = false;
 
 	float messageBoxAlpha = 0;
-	string messageMoji = "";
+
 
 	Vector2 invenslotOffset = { -30,-10.3 };
 	Vector2 invenMarkerOffset = { -21,0 };
 
-	Vector2 testPos = { 0,0 };
-	float fontSize = 1;
+
+	bool isTypingMode = false;
 
 
 

@@ -37,6 +37,7 @@ void MapObj::Init()
 
 void MapObj::Update()
 {
+
 	CameraInfo();
 
 	if (rotY == 1) { rotAngle = 90; }
@@ -48,8 +49,7 @@ void MapObj::Update()
 
 	AddPointLight();
 
-	KdCollider::SphereInfo sphere(KdCollider::TypeDamage, pos + Vector3(0,1.4,0), 2);
-
+	//KdCollider::SphereInfo sphere(KdCollider::TypeDamage, pos + Vector3(0,1.4,0), 2);
 	//if(!isWalkable)		debugWire->AddDebugSphereByType(sphere,{1,0,0,1});
 
 
@@ -66,8 +66,7 @@ void MapObj::Update()
 		else torchWorld = Matrix::CreateRotationY(DirectX::XMConvertToRadians(rotAngle)) * Matrix::CreateTranslation(pos + torchPos);
 		
 		if (!isfireEff1) {
-			fireEff1Id = KdEffekseerManager::GetInstance().m_nextUniqueId;
-			KdEffekseerManager::GetInstance().Play("NA_simple_aura_large.efkefc", { torchWorld.Translation() }, 0.07, 0.7, false);
+			KdEffekseerManager::GetInstance().PlayById(fireEff1Id,"NA_simple_aura_large.efkefc", { torchWorld.Translation() }, 0.07, 0.7, false);
 			isfireEff1 = true;
 		}
 
@@ -78,8 +77,7 @@ void MapObj::Update()
 		else torchWorld2 = Matrix::CreateRotationY(DirectX::XMConvertToRadians(rotAngle)) * Matrix::CreateTranslation(pos + torchPos2);
 
 		if (!isfireEff2) {
-			fireEff2Id = KdEffekseerManager::GetInstance().m_nextUniqueId;
-			KdEffekseerManager::GetInstance().Play("NA_simple_aura_large.efkefc", { torchWorld2.Translation() }, 0.07, 0.7, false);
+			KdEffekseerManager::GetInstance().PlayById(fireEff2Id,"NA_simple_aura_large.efkefc", { torchWorld2.Translation() }, 0.07, 0.7, false);
 			isfireEff2 = true;
 		}
 
@@ -92,7 +90,7 @@ void MapObj::Update()
 void MapObj::DrawLit()
 {
 	if(!hasModel || !model) return;
-
+	if (GameManager::Instance().GetIsBattleMode()) return;
 
 	
 	KdShaderManager::Instance().m_StandardShader.DrawModel(*model, worldMat, objColor);
@@ -106,6 +104,7 @@ void MapObj::DrawLit()
 void MapObj::GenerateDepthMapFromLight()
 {
 	if (!hasModel || !model) return;
+	if (GameManager::Instance().GetIsBattleMode()) return;
 
 	if(!isSpawn) KdShaderManager::Instance().m_StandardShader.DrawModel(*model, worldMat, objColor); // clear shadow of bottle after anim
 	
@@ -124,67 +123,12 @@ void MapObj::PostUpdate()
 
 void MapObj::DrawBright()
 {
-	//if (!subModel) return;
-	if (objType == MapType::ChestType) {
-		//KdShaderManager::Instance().m_StandardShader.DrawModel(*subModel, Matrix::CreateScale(3) *  worldMat);
-	}
-
+	
 
 }
 
 void MapObj::DrawSprite()
 {
-
-	//switch (objType)
-	//{
-	//case MapType::LandType:
-	//	miniMapColor = { 0,0,0,0 };
-	//	break;
-	//case MapType::CorridorType:
-	//	//miniMapColor = { 0,0,0,0.35 };
-	//	miniMapColor = { 0,1,0,1 };
-	//	break;
-	//case MapType::WallType:
-	//	miniMapColor = { 1,1,1,miniMapAlpha };
-	//	break;
-	//case MapType::GoalType:
-	//	miniMapColor = { 0,1,0,miniMapAlpha };
-	//	break;
-	//case MapType::DoorType:
-	//	miniMapColor = { 0,0,1,1 };
-	//	break;
-	//case MapType::ChestType:
-	//	miniMapColor = { 0,1,0,0 };
-	//	break;
-	//case MapType::BottleType:
-	//	miniMapColor = { 1,1,0,0 };
-	//	break;
-
-
-	//default:
-	//	//miniMapColor = { 1,0,0,1 };
-	//	break;
-	//}
-
-
-
-	//if (GameManager::Instance().GetIsMiniMap()) {
-	//	miniMapPos2D.x = scaleFactor * pos.x + xOffset;
-	//	miniMapPos2D.y = scaleFactor * pos.z + yOffset;
-
-	//	KdShaderManager::Instance().m_spriteShader.DrawBox(miniMapPos2D.x, miniMapPos2D.y, 8, 8, &miniMapColor, true);
-
-	//	
-
-	//	//KdShaderManager::Instance().m_spriteShader.SetMatrix(Matrix::CreateScale(2) * Matrix::CreateTranslation(miniMapPos2D.x, miniMapPos2D.y, 0));
-	//	//KdShaderManager::Instance().m_spriteShader.DrawTex(miniMapTex, 0, 0, miniMapRect.width, miniMapRect.height, &miniMapRect, &miniMapColor, Math::Vector2{ 0, 0.5 });
-	//	//KdShaderManager::Instance().m_spriteShader.SetMatrix(Matrix::Identity);
-
-
-	//	
-
-
-	//}
 
 
 
@@ -238,34 +182,36 @@ void MapObj::DrawMini()
 
 		if (objType == MapType::WallType) {
 			Math::Rectangle miniMapRect = { 0,0,14,14 };
-			KdShaderManager::Instance().m_spriteShader.SetMatrix(Matrix::CreateScale(2, 2, 2)  * Matrix::CreateTranslation(miniMapPos2D.x - GameManager::Instance().scrollX, miniMapPos2D.y - GameManager::Instance().scrollY,0));
+			KdShaderManager::Instance().m_spriteShader.SetMatrix(Matrix::CreateScale(2, 2, 2)  * Matrix::CreateTranslation(miniMapPos2D.x - GameManager::Instance().GetPlayerScrollX(), miniMapPos2D.y - GameManager::Instance().GetPlayerScrollY(), 0));
 			KdShaderManager::Instance().m_spriteShader.DrawTex(iconTex,0,0, miniMapRect.width, miniMapRect.height, &miniMapRect, &kWhiteColor);
 			KdShaderManager::Instance().m_spriteShader.SetMatrix(Matrix::Identity);
 		}
 		else if (objType == MapType::BottleType) {
 			Math::Rectangle miniMapRect = { 0,0,14,14 };
-			KdShaderManager::Instance().m_spriteShader.SetMatrix(Matrix::CreateScale(2, 2, 2) * Matrix::CreateTranslation(miniMapPos2D.x - GameManager::Instance().scrollX, miniMapPos2D.y - GameManager::Instance().scrollY, 0));
-			if(!hasPlayedAnimation) KdShaderManager::Instance().m_spriteShader.DrawTex(iconTex, 0, 0, miniMapRect.width, miniMapRect.height, &miniMapRect, &kWhiteColor);
+			KdShaderManager::Instance().m_spriteShader.SetMatrix(Matrix::CreateScale(2, 2, 2) * Matrix::CreateTranslation(miniMapPos2D.x - GameManager::Instance().GetPlayerScrollX(), miniMapPos2D.y - GameManager::Instance().GetPlayerScrollY(), 0));
+			if(!hasTriger) KdShaderManager::Instance().m_spriteShader.DrawTex(iconTex, 0, 0, miniMapRect.width, miniMapRect.height, &miniMapRect, &kWhiteColor);
 			KdShaderManager::Instance().m_spriteShader.SetMatrix(Matrix::Identity);
 		}
 		else if (objType == MapType::ChestType || objType == MapType::MimicType || objType == MapType::GoalType) {
 			Math::Rectangle miniMapRect = { 0,0,32,32 };
-			KdShaderManager::Instance().m_spriteShader.SetMatrix(Matrix::CreateScale(1, 1, 1) * Matrix::CreateTranslation(miniMapPos2D.x - GameManager::Instance().scrollX, miniMapPos2D.y - GameManager::Instance().scrollY, 0));
-			if (!hasPlayedAnimation) KdShaderManager::Instance().m_spriteShader.DrawTex(iconTex, 0, 0, miniMapRect.width, miniMapRect.height, &miniMapRect, &kWhiteColor);
+			KdShaderManager::Instance().m_spriteShader.SetMatrix(Matrix::CreateScale(1, 1, 1) * Matrix::CreateTranslation(miniMapPos2D.x - GameManager::Instance().GetPlayerScrollX(), miniMapPos2D.y - GameManager::Instance().GetPlayerScrollY(), 0));
+			if (!hasTriger) KdShaderManager::Instance().m_spriteShader.DrawTex(iconTex, 0, 0, miniMapRect.width, miniMapRect.height, &miniMapRect, &kWhiteColor);
 			KdShaderManager::Instance().m_spriteShader.SetMatrix(Matrix::Identity);
 		}
 		else if (objType == MapType::DoorType) {
 			Math::Rectangle miniMapRect = { 0,0,155,154 };
-			KdShaderManager::Instance().m_spriteShader.SetMatrix(Matrix::CreateScale(0.2, 0.2, 0.2) * Matrix::CreateTranslation(miniMapPos2D.x - GameManager::Instance().scrollX, miniMapPos2D.y - GameManager::Instance().scrollY, 0));
+			KdShaderManager::Instance().m_spriteShader.SetMatrix(Matrix::CreateScale(0.2, 0.2, 0.2) * Matrix::CreateTranslation(miniMapPos2D.x - GameManager::Instance().GetPlayerScrollX(), miniMapPos2D.y - GameManager::Instance().GetPlayerScrollY(), 0));
 			KdShaderManager::Instance().m_spriteShader.DrawTex(iconTex, 0, 0, miniMapRect.width, miniMapRect.height, &miniMapRect, &kWhiteColor);
 			KdShaderManager::Instance().m_spriteShader.SetMatrix(Matrix::Identity);
 		}
 		else if (objType == MapType::TrapType) {
 			Math::Rectangle miniMapRect = { 0,0,32,32 };
-			KdShaderManager::Instance().m_spriteShader.SetMatrix(Matrix::CreateScale(1, 1, 1) * Matrix::CreateTranslation(miniMapPos2D.x - GameManager::Instance().scrollX, miniMapPos2D.y - GameManager::Instance().scrollY, 0));
+			KdShaderManager::Instance().m_spriteShader.SetMatrix(Matrix::CreateScale(1, 1, 1) * Matrix::CreateTranslation(miniMapPos2D.x - GameManager::Instance().GetPlayerScrollX(), miniMapPos2D.y - GameManager::Instance().GetPlayerScrollY(), 0));
 			KdShaderManager::Instance().m_spriteShader.DrawTex(iconTex, 0, 0, miniMapRect.width, miniMapRect.height, &miniMapRect, &kWhiteColor);
 			KdShaderManager::Instance().m_spriteShader.SetMatrix(Matrix::Identity);
 		}
+
+
 		//else  KdShaderManager::Instance().m_spriteShader.DrawBox(miniMapPos2D.x - GameManager::Instance().scrollX, miniMapPos2D.y - GameManager::Instance().scrollY, 14, 14, &outColor, true);
 
 		
@@ -490,17 +436,17 @@ void MapObj::UpdateAnimation()
 		anime->AdvanceTime(model->WorkNodes(), aniSpd);
 	}
 
-	if (objType == MapType::TrapType)	aniResetCnt--;
+	if(objType == GoalType || objType == TrapType) triggerResetCnt--;
 	
-	if (hasPlayedAnimation && aniResetCnt < 0) {
-		hasPlayedAnimation = false;
+	if (hasTriger && triggerResetCnt < 0) {
+		hasTriger = false;
 	}
 
 
 	//bottle drop logic
 	if (objType == MapType::BottleType) {
 		objColor = { 1,1,1,objAlpha };
-		if (hasPlayedAnimation && anime->IsAnimationEnd()) { objAlpha -= 0.028; }
+		if (hasTriger && anime->IsAnimationEnd()) { objAlpha -= 0.028; }
 		if (objAlpha < 0 && !isSpawn) { 
 			isSpawn = true;
 			objCollider->SetEnable(KdCollider::TypeGround, false); 
@@ -511,7 +457,7 @@ void MapObj::UpdateAnimation()
 
 
 	if (objType == MapType::ChestType) { 
-		if (hasPlayedAnimation && anime->IsAnimationEnd() && !hasPlayEff) {
+		if (hasTriger && anime->IsAnimationEnd() && !hasPlayEff) {
 			hasPlayEff = true;
 			KdEffekseerManager::GetInstance().Play("NA_v3_2.5d_shining_4.efkefc", { pos + Vector3(0,2.1,0) }, 0.7, 0.7, false);
 			InventoryManager::Instance().DoRandomSpawnItem(pos + Vector3(-3.5, 0.7, 0));
@@ -522,7 +468,7 @@ void MapObj::UpdateAnimation()
 	}
 
 	if (objType == MapType::MimicType) {
-		if (hasPlayedAnimation && anime->IsAnimationEnd() && !hasPlayEff) {
+		if (hasTriger && anime->IsAnimationEnd() && !hasPlayEff) {
 			hasPlayEff = true;
 			wpCamera.lock()->StartCameraTwist();
 		}
@@ -530,45 +476,6 @@ void MapObj::UpdateAnimation()
 
 }
 
-void MapObj::PlayAnimation()
-{
-	if (!hasPlayedAnimation) {
-		hasPlayedAnimation = true;
-
-		anime->SetAnimation(model->GetData()->GetAnimation(0), false);
-
-		switch (objType)
-		{
-		case MapType::BottleType:
-			GameManager::Instance().SetStageProgress(GameManager::Instance().GetStageProgress() + 15);
-			KdAudioManager::Instance().PlayBarrelSE();
-			break;
-		case MapType::ChestType:
-			GameManager::Instance().SetStageProgress(GameManager::Instance().GetStageProgress() + 35);
-			KdAudioManager::Instance().PlayChestSE();
-			break;
-		case MapType::MimicType:
-			GameManager::Instance().SetStageProgress(GameManager::Instance().GetStageProgress() + 15);
-			KdAudioManager::Instance().PlayChestSE();
-			break;
-		case MapType::DoorType:
-			GameManager::Instance().SetStageProgress(GameManager::Instance().GetStageProgress() + 10);
-			KdAudioManager::Instance().PlayDoorSE();
-			break;
-		case MapType::TrapType:
-			aniResetCnt = 35;
-			GameManager::Instance().SetStageProgress(GameManager::Instance().GetStageProgress() + 10);
-			KdAudioManager::Instance().PlayTrapSE();
-			break;
-
-		default:
-			break;
-		}
-		
-
-	}
-
-}
 
 void MapObj::AddPointLight()
 {
@@ -584,8 +491,6 @@ void MapObj::AddPointLight()
 		KdShaderManager::Instance().WorkAmbientController().AddPointLight({ 2.1,0, 0 }, 49, { pos + Vector3(0,5.6,0) }, true);
 
 	}
-
-
 
 }
 
@@ -618,28 +523,57 @@ void MapObj::ClearFireEff()
 
 void MapObj::OnHit()
 {
-	if (objType != MapType::NPCType) {
 
-		PlayAnimation();
-
-		if (objType == MapType::BottleType && !isDrop) {
-			/*auto drop = std::make_shared<Drop>();
-			drop->SetPosition(pos + Vector3(0, 2.1, 0));
-			drop->SetMoveVec({ Utility::Rnd(-1,1),Utility::Rnd(1,3),Utility::Rnd(-1,1) });
-			drop->Init();
-			SceneManager::Instance().AddObject(drop);
-			isDrop = true;*/
-		}
-
-	}
-	else { //handle NPC
+	/*if (objType == MapType::NPCType) {
 		if (InputManager::Instance().IsKeyJustPressed(KeyFlg::EnterKey)) {
-			if(canTriggerDialog) DialogManager::Instance().StartDialogTalk();
-
+			if (canTriggerDialog) DialogManager::Instance().StartDialogTalk();
 			GameManager::Instance().SetStageProgress(GameManager::Instance().GetStageProgress() + 100);
 		}
+	}*/
+
+	if (objType == MapType::NPCType) return; 
+
+	if (!hasTriger) {
+		hasTriger = true;
+		if (hasAnime) anime->SetAnimation(model->GetData()->GetAnimation(0), false);
+
+		switch (objType)
+		{
+		case MapType::BottleType:
+			GameManager::Instance().SetStageProgress(GameManager::Instance().GetStageProgress() + 15);
+			KdAudioManager::Instance().PlayBarrelSE();
+			break;
+		case MapType::ChestType:
+			GameManager::Instance().SetStageProgress(GameManager::Instance().GetStageProgress() + 35);
+			KdAudioManager::Instance().PlayChestSE();
+			break;
+		case MapType::MimicType:
+			GameManager::Instance().SetStageProgress(GameManager::Instance().GetStageProgress() + 15);
+			KdAudioManager::Instance().PlayChestSE();
+			break;
+		case MapType::DoorType:
+			GameManager::Instance().SetStageProgress(GameManager::Instance().GetStageProgress() + 10);
+			KdAudioManager::Instance().PlayDoorSE();
+			break;
+		case MapType::TrapType:
+			triggerResetCnt = 35;
+			GameManager::Instance().SetStageProgress(GameManager::Instance().GetStageProgress() + 10);
+			KdAudioManager::Instance().PlayTrapSE();
+			break;
+		case MapType::GoalType:
+			triggerResetCnt = 35;
+			if (GameManager::Instance().GetStageProgress() >= 99) {
+				GameManager::Instance().GoToNextFloor();
+				SetExpired();
+			}
+			break;
+
+		default:
+			break;
+		}
+
+
 	}
-		
 
 
 }

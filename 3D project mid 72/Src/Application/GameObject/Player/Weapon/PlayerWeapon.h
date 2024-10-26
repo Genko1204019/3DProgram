@@ -62,9 +62,7 @@ public:
 
 	bool isWithAtkFrame = false;
 
-	Vector3 playerAtkMovePos = {};
 
-	int playerAtkOrder = 0;
 
 
 
@@ -73,28 +71,18 @@ private:
 	shared_ptr<KdModelWork>  wpModel = nullptr;
 
 	string wpModelName = "Asset/Models/_WeaponObj/Sword/SwordNormal.gltf";
-	//string wpModelName = "Asset/Models/_WeaponObj/DStaff/DStaffRare.gltf";
-
-	shared_ptr<KdModelWork> hitBoxModel = nullptr;
-	string hitBoxModelName = "Asset/Models/_WeaponObj/HitBoxSlash/HitBoxSlash.gltf";
 
 	shared_ptr<KdAnimator> wpAnime;
-
-	KdTrailPolygon tPoly;
 
 	float aniSpd = 0.4777;
 
 	bool isPlayerAttacking = false;
 
-	Vector3 polyOffset = { 0,0,0 };
-
-
 	Matrix wpRotMat = {};
-
 	Matrix newSwordMat = {};
 
-	int wpId = 1; //for combo set 
-	int skillId = 1;
+	int wpId = 1; //for classing combo set 
+	int skillId = 1; //for classing skill
 
 	float wpDmg = 10;
 

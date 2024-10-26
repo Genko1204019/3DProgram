@@ -9,8 +9,8 @@ public:
 	~MapObj() override {}
 
 	//set get pos2D
-	void SetPos2D(const Vector2& pos) { pos2D = pos; }
-	Vector2 GetPos2D() { return pos2D; }
+	//void SetPos2D(const Vector2& pos) { pos2D = pos; }
+	//Vector2 GetPos2D() { return pos2D; }
 
 	//setIsWalkable
 	void SetIsWalkable(bool _isWalkable) { isWalkable = _isWalkable; }
@@ -53,7 +53,6 @@ public:
 	void BottleCollision();
 
 	void UpdateAnimation();
-	void PlayAnimation();
 	void AddPointLight();
 
 	void CalDistPlayerToNPC();
@@ -70,9 +69,6 @@ public:
 
 	void CallImgui() override;
 
-
-
-	bool isDrop = false;
 	bool isSpawn = false;
 
 	
@@ -101,7 +97,7 @@ private:
 
 	Matrix scaleMat = {}, rotMat = {}, transMat = {};
 	Vector3 scale = { 1,1,1 };
-	Vector2 pos2D = { 0,0 };
+	//Vector2 pos2D = { 0,0 };
 	Vector3 texPos2D = { 0,0,0 };
 
 	Color objColor = { 1,1,1,1 };
@@ -126,14 +122,14 @@ private:
 	bool isWalkable = false;
 	bool hasModel = false;
 	bool hasAnime = false;
-	bool hasPlayedAnimation = false;
+	bool hasTriger = false;
 	bool hasPlayEff = false;
 
 	int rotY = -1;
 	int rotAngle = 0;
 
 	float aniSpd = 1;
-	float aniResetCnt = 100;
+	float triggerResetCnt = 100;
 
 
 	Vector3 posOffset = {}; //to adjust spike pos

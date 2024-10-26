@@ -21,8 +21,8 @@ void InputManager::UpdateKeyInput()
 	//up down left right
 	if (GetAsyncKeyState(VK_UP) & 0x8000)   m_nowKey |= KeyFlg::UpKey;
 	if (GetAsyncKeyState(VK_DOWN) & 0x8000)   m_nowKey |= KeyFlg::DownKey;
-	if (GetAsyncKeyState(VK_LEFT) & 0x8000)   m_nowKey |= KeyFlg::LeftKey;
-	if (GetAsyncKeyState(VK_RIGHT) & 0x8000)   m_nowKey |= KeyFlg::RightKey;
+	if (GetAsyncKeyState('A') & 0x8000)   m_nowKey |= KeyFlg::AKey;
+	if (GetAsyncKeyState('D') & 0x8000)   m_nowKey |= KeyFlg::DKey;
 
 	if (GetAsyncKeyState(VK_LBUTTON) & 0x8000)   m_nowKey |= KeyFlg::LButton;
 	if (GetAsyncKeyState(VK_RBUTTON) & 0x8000)   m_nowKey |= KeyFlg::RButton;
@@ -137,8 +137,8 @@ void InputManager::CallImgui()
 		{"MKey", KeyFlg::MKey},
 		{"UpKey", KeyFlg::UpKey},
 		{"DownKey", KeyFlg::DownKey},
-		{"LeftKey", KeyFlg::LeftKey},
-		{"RightKey", KeyFlg::RightKey},
+		{"AKey", KeyFlg::AKey},
+		{"DKey", KeyFlg::DKey},
 	};
 
 	for (const auto& key : keyList)

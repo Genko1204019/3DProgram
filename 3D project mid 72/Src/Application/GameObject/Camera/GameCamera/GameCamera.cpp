@@ -9,14 +9,7 @@ void GameCamera::Init()
 {
 	CameraBase::Init();
 
-
-
 	pos = { 0,4,-10 };
-	
-
-
-	//rot = { 0,7,0,0 };asdw
-
 
 	debugWire = std::make_unique<KdDebugWireFrame>();
 
@@ -29,28 +22,18 @@ void GameCamera::Update()
 	EnemyInfo();
 	PlayerInfo();
 
-
-	WorkCamera()->SetProjectionMatrix(GameManager::Instance().camFov);
 	
+	CameraEffect();
 	ScreenShake();
-
-	//WorkCamera()->SetFocus(focusDist, focusForRange, focusBackRange);
 
 	DoCameraMove();
 
-
-	ApplyBlurEffect();
-
-
-	{
-		CameraTwist();
-		KdShaderManager::Instance().m_postProcessShader.SetBrightThreshold(camBrightness);
-
-	}
-
+	CameraTwist();
 
 	ReturnToFollow();
 	CounterManager();
+
+	DebugKey();
 
 }
 
@@ -62,64 +45,56 @@ void GameCamera::PreDraw()
 void GameCamera::PostUpdate()
 {
 	UpdateMatrix();
-	UpdateRotateByMouse();
-
-	//direction from camera to player
-	Vector3 rayDir = playerPos - pos;
-	rayDir.Normalize();
-
-	
-
-	
-
-	
-
-
-
-
-	
-
-	
-
-	//ray.pos move towward ray's direction 
-	
+	UpdateCameraRotation();
 
 	
 }
 
 
 
-void GameCamera::UpdateRotateByMouse()
+void GameCamera::UpdateCameraRotation()
 {
-	if (InputManager::Instance().IsKeyJustPressed(OKey)) isMouseMode = !isMouseMode;
 
 
-	if (isLockOn) {
-		EnemyLockOn();
-	}
-	else {
-		if (!GetAsyncKeyState('Z') && !isMouseMode) {
-			// マウスでカメラを回転させる処理
-			POINT _nowPos;
-			GetCursorPos(&_nowPos);
-
-			POINT _mouseMove{};
-			_mouseMove.x = _nowPos.x - m_FixMousePos.x;
-			_mouseMove.y = _nowPos.y - m_FixMousePos.y;
-
-			SetCursorPos(m_FixMousePos.x, m_FixMousePos.y);
-
-			// 実際にカメラを回転させる処理(0.15はただの補正値)
-			m_DegAng.x += _mouseMove.y * 0.15f;
-			m_DegAng.y += _mouseMove.x * 0.15f;
-
-			// 回転制御
-			m_DegAng.x = std::clamp(m_DegAng.x, -14.f, 42.f);
-		}
-
-	}
+	if (isLockOn) EnemyLockOn();	
+	else 	RotateWithMouse();
+	
 
 	
+}
+
+void GameCamera::EnemyLockOn()
+{
+	camToEnemy = enemyPos - playerPos;
+	camToEnemy.Normalize();
+
+	float yaw = atan2(camToEnemy.x, camToEnemy.z);
+	float pitch = atan2(camToEnemy.y, sqrt(camToEnemy.x * camToEnemy.x + camToEnemy.z * camToEnemy.z));
+	m_DegAng.y = DirectX::XMConvertToDegrees(yaw);
+
+	m_DegAng.x = 18;
+}
+
+void GameCamera::RotateWithMouse()
+{
+	if (!GetAsyncKeyState('Z') && !isMouseMode) {
+		// マウスでカメラを回転させる処理
+		POINT _nowPos;
+		GetCursorPos(&_nowPos);
+
+		POINT _mouseMove{};
+		_mouseMove.x = _nowPos.x - m_FixMousePos.x;
+		_mouseMove.y = _nowPos.y - m_FixMousePos.y;
+
+		SetCursorPos(m_FixMousePos.x, m_FixMousePos.y);
+
+		// 実際にカメラを回転させる処理(0.15はただの補正値)
+		m_DegAng.x += _mouseMove.y * 0.15f;
+		m_DegAng.y += _mouseMove.x * 0.15f;
+
+		// 回転制御
+		m_DegAng.x = std::clamp(m_DegAng.x, -14.f, 42.f);
+	}
 }
 
 void GameCamera::CounterManager()
@@ -128,42 +103,17 @@ void GameCamera::CounterManager()
 
 }
 
-void GameCamera::EnterDialogMode()
+void GameCamera::CameraEffect()
 {
-	cameraMode = CamMode::DialogMode;
-	GameManager::Instance().camFov = 30;
-	posOffset = dialogPos;
+	//WorkCamera()->SetFocus(focusDist, focusForRange, focusBackRange);
+	WorkCamera()->SetProjectionMatrix(camFov);
+	KdShaderManager::Instance().m_postProcessShader.SetBrightThreshold(camBrightness);
 
-}
-
-void GameCamera::EndDialogMode()
-{
-	cameraMode = CamMode::FollowMode;
-	GameManager::Instance().camFov = 60;
-
-}
-
-void GameCamera::EnemyLockOn()
-{
-	camToEnemy = enemyPos - playerPos;
-	camToEnemy.Normalize();
-
-	camToEnemyXZ = Vector3(enemyPos.x ,0, enemyPos.z) - Vector3(playerPos.x, 0, playerPos.z);
-	camToEnemyXZ.Normalize();
-
-	float yaw = atan2(camToEnemy.x, camToEnemy.z);
-	float pitch = atan2(camToEnemy.y, sqrt(camToEnemy.x * camToEnemy.x + camToEnemy.z * camToEnemy.z));
-	m_DegAng.y = DirectX::XMConvertToDegrees(yaw);
-
-	//m_DegAng.x = -DirectX::XMConvertToDegrees(pitch); // Pitch might need to be inverted depending on the coordinate system
-	//m_DegAng.x = std::clamp(m_DegAng.x, -45.f, 45.f);
-
-	m_DegAng.x = 18; //fixed pitch
 }
 
 void GameCamera::PlayerInfo()
 {
-	const shared_ptr<Player> spPlayer = wpPlayer.lock(); // one const or two const??
+	const shared_ptr<Player> spPlayer = wpPlayer.lock(); 
 	if (spPlayer) {
 		playerPos = spPlayer->GetPosition();
 		playerTransMat = Matrix::CreateTranslation(playerPos);
@@ -193,17 +143,10 @@ void GameCamera::UpdateMatrix()
 	rotMat = GetRotationMatrix();
 
 	
-	switch (cameraMode)
+	switch (nowState)
 	{
 	case CamMode::FollowMode:
 		worldMat = localPosMat * localRotMat * rotMat * playerTransMat;
-
-		/*if (GameManager::Instance().GetIsInventoryOpen()) {
-			posOffset.y = 25.8;
-		}
-		else {
-			posOffset.y = originalPosOffset.y;
-		}*/
 		break;
 	case CamMode::DialogMode:
 		worldMat = localPosMat * localRotMat;
@@ -211,15 +154,10 @@ void GameCamera::UpdateMatrix()
 	case CamMode::BattleSceneMode:
 		worldMat = localPosMat * localRotMat;
 		if (cutSceneCnt < 0 && !isCamMoving) {
-			/*cameraMode = CamMode::FollowMode;
-			posOffset = originalPosOffset;
-			rotOffset = originalRotOffset;*/
 			PlanCameraMove(observeEnemyPos, { 7,-9,-2.1 }, { 0,0,0 }, { 0,0,0 },40); 
-
 			m_DegAng = { 2,-1.8,0 };
 			UiManager::Instance().showBattleStart = true;
 		}
-
 		break;
 	case CamMode::StandStillMode:
 		worldMat = localPosMat * localRotMat;
@@ -235,12 +173,7 @@ void GameCamera::UpdateMatrix()
 
 	cutSceneCnt--;
 
-	
-
-
-	 
 	alphaMat = Matrix::CreateTranslation(posOffset) * rotMat * playerTransMat;
-
 
 
 }
@@ -251,26 +184,21 @@ void GameCamera::ScreenShake()
 		screenShakeTime += (1.0f / 60.0f); // Assuming your game runs at 60 FPS
 
 		if (screenShakeTime < screenShakeDuration) {
-			// Apply a random offset to the camera's position
 			float shakeX = Utility::Rnd(-shakeIntensity, shakeIntensity);
 			float shakeY = Utility::Rnd(-shakeIntensity, shakeIntensity);
 			float shakeZ = Utility::Rnd(-shakeIntensity, shakeIntensity);
 
-			// Apply the shake offset to the position
 			posOffset.x = originalPosOffset.x + shakeX;
 			posOffset.y = originalPosOffset.y + shakeY;
 			posOffset.z = originalPosOffset.z + shakeZ;
-
 		}
 		else {
-			// Screen shake has ended, now return to the original position smoothly
-			posOffset = Vector3::Lerp(posOffset, originalPosOffset, 0.1f); // Interpolate back to original position
-			rotOffset = Vector3::Lerp(rotOffset, originalRotOffset, 0.1f); // Interpolate back to original rotation
+			posOffset = Vector3::Lerp(posOffset, originalPosOffset, 0.1f); 
+			rotOffset = Vector3::Lerp(rotOffset, originalRotOffset, 0.1f); 
 
-			// If the camera is close enough to the original position, stop the shake
 			if ((posOffset - originalPosOffset).Length() < 0.01f && (rotOffset - originalRotOffset).Length() < 0.01f) {
-				posOffset = originalPosOffset; // Ensure it snaps exactly to the original position
-				rotOffset = originalRotOffset; // Ensure it snaps exactly to the original rotation
+				posOffset = originalPosOffset; 
+				rotOffset = originalRotOffset; 
 				isScreenShake = false;
 				screenShakeTime = 0.0f;
 			}
@@ -281,7 +209,6 @@ void GameCamera::ScreenShake()
 void GameCamera::StartScreenShake(float _duration)
 {
 	screenShakeDuration = _duration;
-
 	originalPosOffset = posOffset;
 	originalRotOffset = rotOffset;
 	isScreenShake = true;
@@ -290,24 +217,16 @@ void GameCamera::StartScreenShake(float _duration)
 
 void GameCamera::StartBattleCutScene()
 {
-	cameraMode = CamMode::BattleSceneMode;
-	
-	//cutSceneProcess = 0;
-	//PlanCameraMove({5,14,-42}, {5,14,14}, {32,0,0}, {32,0,0},210);
-	
+	nowState = CamMode::BattleSceneMode;
 	posOffset = { observeEnemyPos };
 	cutSceneCnt = 280;
 
 }
 
-void GameCamera::StartDialogCutScene()
-{
-}
-
 void GameCamera::StartWinCutScene()
 {
 	cutSceneCnt = 210;
-	cameraMode = CamMode::WinCutSceneMode;
+	nowState = CamMode::WinCutSceneMode;
 	posOffset = observePlayerPos;
 	rotOffset = { 0,0,0 };
 }
@@ -321,9 +240,7 @@ void GameCamera::PlanCameraMove(Vector3 _startPos, Vector3 _endPos, Vector3 _sta
 	targetRot = _endRot;
 
 	moveDuration = _duration;
-
 	cutSceneProcess++;
-
 	isCamMoving = true;
 }
 
@@ -331,18 +248,16 @@ void GameCamera::DoCameraMove()
 {
 	if (isCamMoving) {
 		moveElapsed += (1.0f / 60.0f);
-		time = min(moveElapsed / moveDuration, 1.0f);
+		float time = min(moveElapsed / moveDuration, 1.0f);
+		float dist = (targetPos - posOffset).Length();
 
 		posOffset = Vector3::Lerp(posOffset, targetPos, time);
 		rotOffset = Vector3::Lerp(rotOffset, targetRot, time);
 
-		float dist = (targetPos - posOffset).Length();
 		if (dist < 0.1f){
-		//if (time >= 1) {
 			moveElapsed = 0;
 			isCamMoving = false;
-			cameraMode = CamMode::FollowMode;
-
+			nowState = CamMode::FollowMode;
 			posOffset = originalPosOffset;
 			rotOffset = originalRotOffset;
 		}
@@ -416,21 +331,18 @@ void GameCamera::CameraTwist()
 
 void GameCamera::StartCameraTwist()
 {
-	twistElapsed = 0.0f;   // Reset the elapsed time
-	isTwisting = true;     // Set the flag to indicate the twist is active
-	twistAngle = 0.0f;     // Start with no twist initially
+	twistElapsed = 0.0f;   
+	isTwisting = true;     
+	twistAngle = 0.0f;     
 	camFov = 60;
 }
 
-void GameCamera::ApplyBlurEffect()
-{
-}
 
 void GameCamera::StartStandStill()
 {
 	standStillDuration = 210;
 	standStillCnt = standStillDuration;
-	cameraMode = CamMode::StandStillMode;
+	nowState = CamMode::StandStillMode;
 	isStandStill = true;
 	posOffset = standStillPos;
 	
@@ -440,24 +352,24 @@ void GameCamera::ReturnToFollow()
 {
 	if (isStandStill && standStillCnt < 0) {
 		isStandStill = false;
-		cameraMode = CamMode::FollowMode;
+		nowState = CamMode::FollowMode;
 	}
 
 }
 
 void GameCamera::OpenInventoryMode()
 {
-	//cameraMode = CamMode::InventoryMode;
 	m_DegAng.x = 14;
 	m_DegAng.y = -5;
-	//posOffset = { 0,0,0 };
-	//rotOffset = { 0,0,0 };
+	
 }
 
-void GameCamera::InventoryToFollowMode()
+void GameCamera::DebugKey()
 {
-	//cameraMode = CamMode::FollowMode;
+	if (InputManager::Instance().IsKeyJustPressed(OKey)) isMouseMode = !isMouseMode;
 }
+
+
 
 void GameCamera::CallImgui()
 {
@@ -480,7 +392,7 @@ void GameCamera::CallImgui()
 	ImGui::Text("isCamMoving:%d", isCamMoving);
 
 	//sliderint cameraMode 0 -7 :
-	ImGui::SliderInt("camMode", &cameraMode, 0, 5);
+	ImGui::SliderInt("camMode", &nowState, 0, 5);
 
 
 	//show debug related to cam twist
@@ -494,10 +406,8 @@ void GameCamera::CallImgui()
 	//check iscamMoveing
 	ImGui::Checkbox("isCamMoving", &isCamMoving);
 	//show cameraMode
-	ImGui::Text("cameraMode:%d", cameraMode);
-	//show time
-	ImGui::Text("time:%.2f", time);
-
+	ImGui::Text("cameraMode:%d", nowState);
+	
 	//slider shakeIntensity
 	ImGui::SliderFloat("shakeIntensity", &shakeIntensity, 0.0f, 1.0f);
 	//slider screenShakeDuration 0 - 5
@@ -536,8 +446,6 @@ ImGui::SliderFloat("posOffset.z", &posOffset.z, -200.0f, 200.0f);
 ImGui::SliderFloat("rotOffset.x", &rotOffset.x, 0.0f, 360.0f);
 ImGui::SliderFloat("rotOffset.y", &rotOffset.y, 0.0f, 360.0f);
 ImGui::SliderFloat("rotOffset.z", &rotOffset.z, 0.0f, 360.0f);
-
-
 
 	//show DegAng xyz
 	ImGui::Text("DegAng x:%.2f y:%.2f z:%.2f", m_DegAng.x, m_DegAng.y, m_DegAng.z);

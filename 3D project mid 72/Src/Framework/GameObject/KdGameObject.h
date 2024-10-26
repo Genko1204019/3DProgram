@@ -40,6 +40,8 @@ public:
 	virtual void CallImgui() {}
 	virtual void DrawDebug();
 
+	void GameTimeInfo();
+
 	virtual void SetAsset(const std::string&) {}
 	void SetScale(float scalar);
 	virtual void SetScale(const Math::Vector3& scale);
@@ -56,7 +58,9 @@ public:
 	bool Intersects(const KdCollider::RayInfo& targetShape, std::list<KdCollider::CollisionResult>* pResults);
 
 	virtual bool IsExpired() const { return m_isExpired; }
-	void SetExpired() { m_isExpired = true; }
+	void SetExpired() {
+		m_isExpired = true;
+	}
 
 	virtual bool IsVisible()	const { return false; }
 	virtual bool IsRideable()	const { return false; }
@@ -88,12 +92,13 @@ public:
 
 	weak_ptr<GameCamera> wpCamera;
 
+	string objName = "";
 	
 protected:
 
 	void Release() {}
 
-
+	float gameSpd = 1;
 
 	UINT drawType = 0;
 
@@ -118,7 +123,7 @@ protected:
 	int objType = -1;
 
 
-	float gameSpd = 1;
+
 
 	
 

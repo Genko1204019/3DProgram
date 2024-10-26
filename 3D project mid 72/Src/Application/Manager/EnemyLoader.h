@@ -17,9 +17,6 @@ public:
 	void LoadWanderEnemy();
 	void LoadBattleEnemy();
 
-	void LoadBossEnemy();
-
-
 	void CallImgui() override;
 
 
@@ -33,8 +30,6 @@ private:
 	int ArcherToLoad = 0;
 	int HealerToLoad = 0;
 
-	//Vector3 enemySpawnPos = { 70 ,-28,35 };
-	//Vector3 enemySpawnPos = { 30 ,77,28 };
 	Vector3 enemySpawnPos = { 7.5 ,-14,28 };
 
 

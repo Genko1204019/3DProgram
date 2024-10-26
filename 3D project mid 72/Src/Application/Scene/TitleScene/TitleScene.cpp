@@ -43,7 +43,7 @@ void TitleScene::Init()
 
 	MapLoader::Instance().SetCamera(spCamera);
 	MapLoader::Instance().SetPlayer(spPlayer);
-	MapLoader::Instance().SetKdCamera(spCamera->WorkCamera());
+	//MapLoader::Instance().SetKdCamera(spCamera->WorkCamera());
 
 	EnemyLoader::Instance().SetCamera(spCamera);
 	EnemyLoader::Instance().SetPlayer(spPlayer);

@@ -14,6 +14,56 @@ class KdSoundInstance3D;
 // 再生中のサウンドインスタンスの管理（全停止・一時停止などが可能）
 // サウンドアセットの管理
 // ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// ///// /////
+
+enum KdSoundType
+{
+	SwordSE,
+	SwordHitSE,
+	GetHitSE,
+	NextLevelSE,
+	PotionSE,
+	StairSE,
+	MagicAtkSE,
+	RelifeSE,
+	TextSE,
+	BarrelSE,
+	ChestSE,
+	ChestShineSE,
+	GameStartSE,
+	DoorSE,
+	DashSE,
+	UiHoverSE,
+	UiDenieSE,
+	EquipItemSE,
+	UseItemSE,
+	PickUpSE,
+	EnemyGiveUpSE,
+	WarnSE,
+	TrapSE,
+
+	FootStepSE,
+	WpSpinSE,
+	OpenInvenSE,
+	EncounterSE,
+	DizzySE,
+	VictorySE,
+	MonsterVoiceSE,
+	FinalHitSE,
+
+	BossSlashWaveSE,
+	PlayerSlashWaveSE,
+	PlayerSpinSE,
+	MageAtkSE,
+	MagicExplosionSE,
+};
+
+struct KdSoundData
+{
+	std::string fileName;
+	float volumeAdjust;
+	bool loop;
+};
+
 class KdAudioManager
 {
 public:
@@ -29,6 +79,9 @@ public:
 	// サウンド再生
 	std::shared_ptr<KdSoundInstance>  Play(std::string_view rName, bool loop = false);
 	std::shared_ptr<KdSoundInstance3D> Play3D(std::string_view rName, const Math::Vector3& rPos, bool loop = false);
+
+	std::shared_ptr<KdSoundInstance> Play(KdSoundType soundType);
+
 
 	void AddPlayList(const std::shared_ptr<KdSoundInstance>& rSound)
 	{

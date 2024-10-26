@@ -9,6 +9,10 @@ void KdGameObject::DrawDebug()
 	debugWire->Draw();
 }
 
+void KdGameObject::GameTimeInfo()
+{
+}
+
 void KdGameObject::SetScale(float scalar)
 {
 	Math::Vector3 scale(scalar);

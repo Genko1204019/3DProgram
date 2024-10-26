@@ -23,9 +23,6 @@ void UiManager::Update()
 
 	ControlMessageBox();
 
-	ShowBattleStart();
-
-	ShowBattleWin();
 }
 
 void UiManager::DrawSprite()
@@ -34,8 +31,15 @@ void UiManager::DrawSprite()
 
 	if (!hasUi) return;
 
+	for (const auto& layer : DrawOrder) {
+		for (auto& element : uiElements) {
+			if (element.drawOrder == layer) {
+				DrawUi(element);
+			}
+		}
+	}
 
-	for (auto& element : uiElements) {
+	/*for (auto& element : uiElements) {
 		if (element.drawOrder == LowBackground) {
 			DrawUi(element);
 		}
@@ -82,7 +86,7 @@ void UiManager::DrawSprite()
 			DrawUi(element);
 		}
 
-	}
+	}*/
 
 
 	
@@ -439,26 +443,8 @@ void UiManager::ControlMessageBox()
 
 }
 
-void UiManager::OpenMessageBox(Vector2 _boxPos, string _messageMoji)
-{
-	messageBoxAlpha = 1;
-	messageMoji = _messageMoji;
 
-	for (auto& element : uiElements) {
-		if (element.tag == UiTag::MessageBoxFrame) {
-			element.pos = _boxPos;
-		}
-	}
 
-}
-
-void UiManager::ShowBattleStart()
-{
-}
-
-void UiManager::ShowBattleWin()
-{
-}
 
 void UiManager::DrawUi(UiElement& _ui)
 {
@@ -488,8 +474,7 @@ void UiManager::DrawUi(UiElement& _ui)
 	
 
 
-	testX = _ui.pos.x;
-	testY = _ui.pos.y;
+	
 	KdShaderManager::Instance().m_spriteShader.SetMatrix(Matrix::CreateScale(_ui.scale.x, _ui.scale.y, 1) * Matrix::CreateRotationZ(DirectX::XMConvertToRadians(_ui.rotation)) * Matrix::CreateTranslation(_ui.pos.x,_ui.pos.y,0));
 	
 	if (_ui.tag == UiTag::StaminaBar || _ui.tag == UiTag::StaminaFrame) {
@@ -550,31 +535,12 @@ void UiManager::CallImgui()
 	ImGui::Begin("UiEditor");
 
 	
-	//slider float fontsize
-	ImGui::SliderFloat("fontSize", &fontSize, 0.3, 7);
-	//slider testPos x y
-	ImGui::SliderFloat("testPosX", &testPos.x, -700, 700);
-	ImGui::SliderFloat("testPosY", &testPos.y, -420, 420);
-
-	//slider float invenslotOffset x y 
-	ImGui::SliderFloat("invenslotOffsetX", &invenslotOffset.x, -700, 700);
-	ImGui::SliderFloat("invenslotOffsetY", &invenslotOffset.y, -420, 420);
-
-	//slider float invenmarkerOffset x y
-	ImGui::SliderFloat("invenMarkerOffsetX", &invenMarkerOffset.x, -700, 700);
-	ImGui::SliderFloat("invenMarkerOffsetY", &invenMarkerOffset.y, -420, 420);
-
-	//sho messageAlpha
-	ImGui::Text("messageAlpha:%f", messageBoxAlpha);
-	//show messageMoji
-	ImGui::Text("messageMoji:%s", messageMoji.c_str());
-
-	//show testX and testY
-	ImGui::Text("testX:%f", testX);
-	ImGui::Text("testY:%f", testY);
-
+	
 	//check hasUi
 	ImGui::Checkbox("hasUi", &hasUi);
+
+	ImGui::Checkbox("istypingMode", &isTypingMode);
+	GameManager::Instance().SetIsTypingMode(isTypingMode);
 
 	static char newName[128] = "";
 	static char newTexPath[256] = "";
@@ -597,9 +563,36 @@ void UiManager::CallImgui()
 
 		ImGui::Separator();
 		ImGui::TextColored(imYellow, "%s", uiElements[i].name.c_str());
+		ImGui::SameLine();
+		if (ImGui::Button("Up") && i < uiElements.size() - 1) {
+			std::swap(uiElements[i], uiElements[i + 1]);
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Down") && i > 0) {
+			std::swap(uiElements[i], uiElements[i - 1]);
+		}
+
+		// Edit name directly
+		static char editName[128];
+		strcpy(editName, uiElements[i].name.c_str());
+		ImGui::InputText("Edit Name", editName, sizeof(editName));
+		uiElements[i].name = editName;
+
+		// Edit texture path
+		static char editTexPath[256];
+		strcpy(editTexPath, uiElements[i].tex->GetFilepath().c_str()); // Assuming KdTexture has a GetFilepath() method
+		if (ImGui::InputText("Edit Texture Path", editTexPath, sizeof(editTexPath))) {
+			// Update the texture if the path has been modified
+			uiElements[i].tex = std::make_shared<KdTexture>(editTexPath);
+		}
 
 		//show uiElements.tag in int
 		ImGui::Text("tag:%d", uiElements[i].tag);
+
+		// Display order controls
+		
+		
+
 
 		if (ImGui::TreeNode("Edit")) {
 			ImGui::Text("moji:%s", uiElements[i].textInput.c_str());

@@ -9,4 +9,11 @@ namespace Utility {
 	float min(float a, float b);
 	float max(float a, float b);
 
+	void CalOverlap(const std::list<KdCollider::CollisionResult>& _colRet, float& _overlap, bool& _isHit, Vector3& _hitPos, Vector3& _hitDir);
+	void CalOverlap(const std::list<KdCollider::CollisionResult>& _colRet, float& _overlap, bool& _isHit, Vector3& _hitPos, Vector3& _hitDir, Vector3& _normal);
+	void HitPositionAdjust(Vector3& _pos, const Vector3& _hitDir, float _overlap);
+	void HitPositionAdjust2D(Vector3& _pos, const Vector3& _hitDir, float _overlap);
+
+
+
 }

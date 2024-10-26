@@ -174,12 +174,5 @@ void from_json(const json& j, StageObj& obj)
 	newObjPtr->InitWithStageObj(obj);
 	SceneManager::Instance().AddObject(std::static_pointer_cast<KdGameObject>(newObjPtr));
 
-
-	//obj.SetCollider();
-
-	/*if (obj.canCollide) {
-		obj.objCollider = std::make_unique<KdCollider>();
-		obj.objCollider->RegisterCollisionShape("StageCol", obj.model, KdCollider::TypeGround);
-	}*/
 	
 }

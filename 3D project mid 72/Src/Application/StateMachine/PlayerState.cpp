@@ -139,24 +139,6 @@ void pSkillState::Exit(KdGameObject* gameObj)
 
 }
 
-void pMagicAtkState::Enter(KdGameObject* gameObj)
-{
-	Player* player = static_cast<Player*>(gameObj);
-	player->EnterMagicAtk();
-}
-
-void pMagicAtkState::Update(KdGameObject* gameObj)
-{
-	Player* player = static_cast<Player*>(gameObj);
-	player->PlayerMagicAtk();
-}
-
-void pMagicAtkState::Exit(KdGameObject* gameObj)
-{
-	Player* player = static_cast<Player*>(gameObj);
-	player->ExitMagicAtk();
-}
-
 void pBlowAwayState::Enter(KdGameObject* gameObj)
 {
 	Player* player = static_cast<Player*>(gameObj);

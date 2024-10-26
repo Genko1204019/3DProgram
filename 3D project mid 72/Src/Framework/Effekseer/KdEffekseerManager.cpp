@@ -66,6 +66,20 @@ std::weak_ptr<KdEffekseerObject> KdEffekseerManager::Play(
 	return Play(info);
 }
 
+std::weak_ptr<KdEffekseerObject> KdEffekseerManager::PlayById(int& _effId, const std::string& effName, const DirectX::SimpleMath::Vector3& pos, const float size, const float speed, const bool isLoop)
+{
+	_effId = m_nextUniqueId;
+	PlayEfkInfo info;
+
+	info.FileName = effName;
+	info.Pos = pos;
+	info.Size = Math::Vector3(size);
+	info.Speed = speed;
+	info.IsLoop = isLoop;
+
+	return Play(info);
+}
+
 void KdEffekseerManager::StopAllEffect()
 {
 	if (m_efkManager == nullptr) { return; }
@@ -142,7 +156,13 @@ void KdEffekseerManager::SetPos(const int handle, const Math::Vector3& pos)
 	m_efkManager->SetLocation(handle, efkPos);
 }
 
-void KdEffekseerManager::SetPosById(int _effectId, Math::Vector3& _pos)
+void KdEffekseerManager::SetPosByIds(int _effectId, Math::Vector3& _pos)
+{
+	Effekseer::Vector3D efkPos = GetEfkVec3D(_pos);
+	m_efkManager->SetLocation(GetEffectHandleById(_effectId), efkPos);
+}
+
+void KdEffekseerManager::SetPosById(int _effectId, Math::Vector3 _pos)
 {
 	Effekseer::Vector3D efkPos = GetEfkVec3D(_pos);
 	m_efkManager->SetLocation(GetEffectHandleById(_effectId), efkPos);

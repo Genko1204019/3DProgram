@@ -31,79 +31,48 @@ public:
 	vector<std::vector<int>>& GetMapData() { return mapData; }
 	vector<std::vector<bool>>& GetIsWalkable() { return isWalkable; }
 
-	
-
-
-
 	float Rnd(float _min, float _max) { return _min + (rand() / (float)RAND_MAX) * (_max - _min); } 
 
 	void Init() override;
 	void Update() override;
 
-	void DrawDebug() override;
-	void DrawUnLit() override;
-
-	void DrawSprite() override;
-
-	void DrawMoji() override;
-	float testY = 0;
-	float rectX = 1280;
-	float rectY = 720;
-
-	void LoadBattleStage();
+	void InitMapInfo();
 
 	void LoadMap();
-	void PlaceMapObj();
 
-	void SetPathManagerData();
+	void UpdateDungeonSize();
 
 	void GenerateBSP(BSPNode* node, int depth);
-
 	void CreateRoomsAndCorridors(BSPNode* node);
 
 	pair<int, int> getCenter(BSPNode* node);
-
 	void connectCenters(const pair<int, int>& center1, const pair<int, int>& center2);
-
 	Node* AStarFindPath(const pair<int, int>& start, const pair<int, int>& goal);
 
 	void EnsureWorkingDoor();
 	void EnsureWallNearDoor(int mapW, int mapH);
 
-
 	void AssignRoomType();
-
 
 	void ClearOldMap();
 	void InitMapData();
 	void CreateBound();
-
-
-	void AddDebugSphereinRoom();
-
-	void PlaceBarrelInRoom(Room& room);
-
-	void PlaceChestInRoom(Room& room);
-
-	void PlaceSpikeInRoom(Room& room);
-
-	void PlaceEnemyInRoom(Room& room);
-
-	void PlaceNPCInRoom(float _posX, float _posY);
-
 	void CounterDungeonInfo();
-	int numOfLand = 0;
-	int numOfWall = 0;
-	float wallRatio = 0;
-	int numOfDoor = 0;
-
 	void CheckBarrelOverlapWithWall();
+	void SetPathManagerData();
 
+	void PlaceObjInDungeon();
+	void PlaceMapObj(Vector3 _pos, int _objType, bool _hasCamera, bool _hasPlayer = false);
+	void PlaceMapObj(std::shared_ptr<MapObj> _mapObj, Vector3 _pos, int _objType, bool _hasCamera, bool _hasPlayer = false);
+	void PlaceBarrelInRoom(Room& room);
+	void PlaceChestInRoom(Room& room);
+	void PlaceSpikeInRoom(Room& room);
+	void PlaceEnemyInRoom(Room& room);
+	void PlaceStartGoal();
 
-
+	
 	void CallImgui() override;
 
-	//setplayer
 	void SetPlayer(const shared_ptr<Player>& player) { wpPlayer = player; }
 
 	weak_ptr<Player> wpPlayer;
@@ -111,18 +80,9 @@ public:
 	bool isLoadMap = false;
 	bool isInit = false;
 
-
 	int mapHeight = 15;  //15-25
 	int mapWidth = 15;   //15-25
 	float mapChipSpace = 6.0f; //12
-
-	shared_ptr<KdTexture> miniMapTex[15][15];
-	Math::Rectangle miniMapRect = { 0,0,8,8 };
-	Math::Rectangle playerminiMapRect = { 0,0,8,8 };
-
-
-
-
 
 	vector<std::vector<Vector3>> mapPos;
 	vector<std::vector<int>> mapData;
@@ -147,22 +107,11 @@ public:
 
 	Vector3 mobPt1, mobPt2, mobPt3, mob2Pt1, mob2Pt2, mob2Pt3;
 
-	weak_ptr<KdCamera> m_cam;
+	int numOfLand = 0;
+	int numOfWall = 0;
+	int numOfDoor = 0;
+	float wallRatio = 0;
 
-	void SetKdCamera(std::shared_ptr<KdCamera> camera)
-	{
-		m_cam = camera;
-	}
-
-	float scrollX = 0;
-	float scrollY = 0;
-
-	float playerMiniPosX = 0;
-	float playerMiniPosY = 0;
-
-	shared_ptr<KdTexture> playerMiniTex;
-
-	float scaleMini = 2;
 
 
 private:
